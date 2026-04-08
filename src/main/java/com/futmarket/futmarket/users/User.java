@@ -24,7 +24,6 @@ public class User {
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
-    /** True for the system superuser that holds all tokens at time zero. */
     @Column(nullable = false)
     private boolean superuser = false;
 }

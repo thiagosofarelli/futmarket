@@ -31,7 +31,6 @@ public class Quote {
     @Column(nullable = false)
     private ValuationStrategy strategy;
 
-    /** Snapshot of the raw score used to produce this value. */
     @Column(nullable = false)
     private double score;
 

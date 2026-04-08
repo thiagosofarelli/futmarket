@@ -44,11 +44,9 @@ public class Order {
     @Column(nullable = false)
     private int tokenQuantity;
 
-    /** Price per token at the moment the order was executed. */
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal pricePerToken;
 
-    /** Total cost = tokenQuantity * pricePerToken */
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal totalAmount;
 

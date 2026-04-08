@@ -31,15 +31,11 @@ public class Player {
     @Column(nullable = false)
     private Position position;
 
-    /** Total tokens issued — always 100 per domain rules. */
     @Column(nullable = false)
     private int totalTokens = 100;
 
-    /** Current market value per token in credits. */
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal currentValue = BigDecimal.ONE;
-
-    // --- raw performance stats (cached from external APIs) ---
 
     private double goals;
     private double assists;
@@ -50,7 +46,6 @@ public class Player {
     private double interceptions;
     private double rating;
 
-    /** External ID used by Football-Data.org */
     @Column(unique = true)
     private Long externalId;
 }

@@ -28,11 +28,9 @@ public class Portfolio {
     @JoinColumn(name = "player_id", nullable = false)
     private Player player;
 
-    /** Number of tokens currently held by this user for this player. */
     @Column(nullable = false)
     private int tokenQuantity;
 
-    /** Optimistic locking to handle concurrent buy/sell on same holding. */
     @Version
     private Long version;
 }
