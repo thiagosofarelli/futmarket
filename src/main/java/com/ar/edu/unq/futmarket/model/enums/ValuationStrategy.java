@@ -1,4 +1,4 @@
-package com.ar.edu.unq.futmarket.model;
+package com.ar.edu.unq.futmarket.model.enums;
 
 public enum ValuationStrategy {
     GENERAL_PERFORMANCE,

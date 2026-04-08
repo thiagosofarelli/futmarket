@@ -1,10 +1,10 @@
 package com.ar.edu.unq.futmarket.repositories;
 
 import com.ar.edu.unq.futmarket.model.Order;
-import com.ar.edu.unq.futmarket.model.OrderStatus;
-import com.ar.edu.unq.futmarket.model.OrderType;
+import com.ar.edu.unq.futmarket.model.enums.OrderStatus;
+import com.ar.edu.unq.futmarket.model.enums.OrderType;
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.Position;
+import com.ar.edu.unq.futmarket.model.enums.Position;
 import com.ar.edu.unq.futmarket.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

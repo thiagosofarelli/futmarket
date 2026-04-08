@@ -2,6 +2,8 @@ package com.ar.edu.unq.futmarket.model;
 
 
 
+import com.ar.edu.unq.futmarket.model.enums.OrderStatus;
+import com.ar.edu.unq.futmarket.model.enums.OrderType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.ar.edu.unq.futmarket.model.enums.Position;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
