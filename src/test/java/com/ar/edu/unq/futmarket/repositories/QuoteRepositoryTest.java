@@ -1,7 +1,7 @@
 package com.ar.edu.unq.futmarket.repositories;
 
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.enums.Position;
+import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ class QuoteRepositoryTest {
         player.setName("Messi");
         player.setTeam("Inter Miami");
         player.setLeague("MLS");
-        player.setPosition(Position.FORWARD);
+        player.setPlayerPosition(PlayerPosition.FORWARD);
         playerRepository.save(player);
     }
 

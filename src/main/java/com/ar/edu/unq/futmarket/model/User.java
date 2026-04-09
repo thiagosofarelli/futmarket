@@ -21,10 +21,24 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "portfolio_id", nullable = false, unique = true)
+    private Portfolio portfolio;
+
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
 
     @Column(nullable = false)
     private boolean superuser = false;
-}
 
+    @PrePersist
+    private void prePersist() {
+        if (portfolio == null) {
+            portfolio = new Portfolio();
+        }
+        portfolio.setUser(this);
+    }
+
+    @Version
+    private Long version;
+}
