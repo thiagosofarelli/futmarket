@@ -39,20 +39,27 @@ public class Position {
     @Version
     private Long version;
 
-    public void registerPurchase(int quantity, BigDecimal purchasePricePerToken) {
-        if (quantity <= 0) {
+    public void registerPurchase(int tokensQuantity, BigDecimal pricePerToken) {
+        if (tokensQuantity <= 0) {
             throw new IllegalArgumentException("token quantity must be greater than zero");
         }
-        if (purchasePricePerToken == null) {
-            throw new IllegalArgumentException("purchase price must not be null");
+        if (pricePerToken == null || pricePerToken.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("purchase price must be greater than zero");
+        }
+        if (player == null) {
+            throw new IllegalStateException("position must be associated with a player");
         }
 
         BigDecimal currentCost = averagePurchasePrice.multiply(BigDecimal.valueOf(tokensAcquired));
-        BigDecimal purchaseCost = purchasePricePerToken.multiply(BigDecimal.valueOf(quantity));
-        tokensAcquired += quantity;
+        BigDecimal purchaseCost = pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity));
+        int totalTokens = tokensAcquired + tokensQuantity;
+
+        tokensAcquired = totalTokens;
         averagePurchasePrice = currentCost.add(purchaseCost)
-                .divide(BigDecimal.valueOf(tokensAcquired), 4, RoundingMode.HALF_UP);
+                .divide(BigDecimal.valueOf(totalTokens), 4, RoundingMode.HALF_UP);
+        player.subAvailableTokens(tokensQuantity);
     }
+
 
     public void registerSale(int quantity) {
         if (quantity <= 0) {
@@ -61,14 +68,17 @@ public class Position {
         if (quantity > tokensAcquired) {
             throw new IllegalArgumentException("cannot sell more tokens than currently held");
         }
+        if (player == null) {
+            throw new IllegalStateException("position must be associated with a player");
+        }
 
         tokensAcquired -= quantity;
-        if (tokensAcquired == 0) {
-            averagePurchasePrice = BigDecimal.ZERO;
+        if (this.tokensAcquired == 0) {
+            this.averagePurchasePrice = BigDecimal.ZERO;
         }
+        player.addAvailableTokens(quantity);
     }
 
-    @Transient
     public BigDecimal getCurrentValue() {
         if (player == null || player.getCurrentTokenPrice() == null) {
             return BigDecimal.ZERO;
@@ -76,12 +86,10 @@ public class Position {
         return player.getCurrentTokenPrice().multiply(BigDecimal.valueOf(tokensAcquired));
     }
 
-    @Transient
     public BigDecimal getProfitLoss() {
         return getCurrentValue().subtract(getInvestedAmount());
     }
 
-    @Transient
     public BigDecimal getInvestedAmount() {
         return averagePurchasePrice.multiply(BigDecimal.valueOf(tokensAcquired));
     }

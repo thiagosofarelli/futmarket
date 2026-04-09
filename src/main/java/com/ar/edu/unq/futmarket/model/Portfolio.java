@@ -25,53 +25,28 @@ public class Portfolio {
     @OneToOne(mappedBy = "portfolio", fetch = FetchType.LAZY)
     private User user;
 
-    // mappedBy apunta al nombre del atributo en la clase Position
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Position> positions = new ArrayList<>();
 
     @Version
     private Long version;
 
+    public BigDecimal getCurrentValue() {
+        return positions.stream()
+                .map(Position::getCurrentValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getProfitLoss() {
+        return positions.stream()
+                .map(Position::getProfitLoss)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     public Optional<Position> getPosition(Player player) {
         return positions.stream()
-                .filter(position -> samePlayer(position.getPlayer(), player))
+                .filter(p -> samePlayer(p.getPlayer(), player))
                 .findFirst();
-    }
-
-    public Position addOrUpdatePosition(Player player, int tokensAcquired, BigDecimal purchasePricePerToken) {
-        Position position = getPosition(player).orElseGet(() -> {
-            Position created = new Position();
-            created.setPortfolio(this);
-            created.setPlayer(player);
-            positions.add(created);
-            return created;
-        });
-
-        position.registerPurchase(tokensAcquired, purchasePricePerToken);
-        return position;
-    }
-
-    public void registerSale(Player player, int tokensSold) {
-        Position position = getPosition(player)
-                .orElseThrow(() -> new IllegalArgumentException("The portfolio does not contain a position for the given player"));
-
-        position.registerSale(tokensSold);
-
-        if (position.getTokensAcquired() == 0) {
-            positions.remove(position);
-        }
-    }
-
-    public BigDecimal calculateCurrentValue(Player player) {
-        return getPosition(player)
-                .map(Position::getCurrentValue)
-                .orElse(BigDecimal.ZERO);
-    }
-
-    public BigDecimal calculateProfitLoss(Player player) {
-        return getPosition(player)
-                .map(Position::getProfitLoss)
-                .orElse(BigDecimal.ZERO);
     }
 
     private boolean samePlayer(Player left, Player right) {
@@ -82,5 +57,76 @@ public class Portfolio {
             return false;
         }
         return left.getId() != null && left.getId().equals(right.getId());
+    }
+
+    public void registerPurchase(Player player, int tokensQuantity) {
+        validateTradeInput(player, tokensQuantity);
+        ensureUserAssigned();
+
+        BigDecimal pricePerToken = requirePositivePrice(player);
+        BigDecimal totalCost = pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity));
+
+        if (user.getBalance().compareTo(totalCost) < 0) {
+            throw new IllegalArgumentException("You don't have enough balance.");
+        }
+
+        if (tokensQuantity > player.getAvailableTokens()) {
+            throw new IllegalArgumentException("There aren't enough tokens to purchase.");
+        }
+
+        Position position = findOrCreatePosition(player);
+        position.registerPurchase(tokensQuantity, pricePerToken);
+        user.subBalance(totalCost);
+    }
+
+    public void registerSell(Player player, int tokensQuantity) {
+        validateTradeInput(player, tokensQuantity);
+        ensureUserAssigned();
+
+        BigDecimal pricePerToken = requirePositivePrice(player);
+        Position position = this.getPosition(player)
+                .orElseThrow(() -> new IllegalArgumentException("The portfolio does not have a position."));
+
+        position.registerSale(tokensQuantity);
+        user.addBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
+
+        if (position.getTokensAcquired() == 0) {
+            positions.remove(position);
+        }
+        user.addBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
+    }
+
+    private void validateTradeInput(Player player, int tokensQuantity) {
+        if (player == null) {
+            throw new IllegalArgumentException("Player must not be null");
+        }
+        if (tokensQuantity <= 0) {
+            throw new IllegalArgumentException("Token quantity must be greater than zero");
+        }
+    }
+
+    private void ensureUserAssigned() {
+        if (user == null) {
+            throw new IllegalStateException("Portfolio must be associated with a user");
+        }
+    }
+
+    private BigDecimal requirePositivePrice(Player player) {
+        BigDecimal pricePerToken = player.getCurrentTokenPrice();
+        if (pricePerToken == null || pricePerToken.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Player current token price must be greater than zero.");
+        }
+        return pricePerToken;
+    }
+
+    private Position findOrCreatePosition(Player player) {
+        return getPosition(player)
+                .orElseGet(() -> {
+                    Position newPosition = new Position();
+                    newPosition.setPortfolio(this);
+                    newPosition.setPlayer(player);
+                    positions.add(newPosition);
+                    return newPosition;
+                });
     }
 }

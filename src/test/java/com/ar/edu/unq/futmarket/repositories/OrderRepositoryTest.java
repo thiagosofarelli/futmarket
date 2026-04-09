@@ -38,9 +38,8 @@ class OrderRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = user("alice");
-        superuser = user("SUPERUSER");
-        superuser.setSuperuser(true);
+        alice = new User("alice", BigDecimal.ZERO, false);
+        superuser = new User("SUPERUSER", BigDecimal.ZERO, true);
         userRepository.saveAll(List.of(alice, superuser));
 
         messi = player("Messi", PlayerPosition.FORWARD);
@@ -121,12 +120,6 @@ class OrderRepositoryTest {
 
     // --- helpers ---
 
-    private User user(String username) {
-        User u = new User();
-        u.setUsername(username);
-        u.setBalance(BigDecimal.ZERO);
-        return u;
-    }
 
     private Player player(String name, PlayerPosition playerPosition) {
         Player p = new Player();

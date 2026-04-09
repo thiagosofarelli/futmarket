@@ -2,6 +2,7 @@ package com.ar.edu.unq.futmarket.model;
 
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -55,5 +56,32 @@ public class Player {
 
     @Version
     private Long version;
+
+    public Player(String name, String team, String league, PlayerPosition playerPosition) {
+        this.name = name;
+        this.team = team;
+        this.league = league;
+        this.playerPosition = playerPosition;
+    }
+
+    public void subAvailableTokens(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("token quantity must be greater than zero");
+        }
+        if (quantity > this.availableTokens) {
+            throw new IllegalArgumentException("cannot buy more tokens than available");
+        }
+        this.availableTokens -= quantity;
+    }
+
+    public void addAvailableTokens(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("quantity must be positive");
+        }
+        if (this.availableTokens + quantity > this.issuedTokens) {
+            throw new IllegalArgumentException("Cannot return more tokens than the total issued amount");
+        }
+        this.availableTokens += quantity;
+    }
 }
 

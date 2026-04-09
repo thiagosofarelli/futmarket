@@ -33,7 +33,7 @@ class PortfolioRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = user("alice");
+        alice = user("alice", new BigDecimal("10000.00"));
         userRepository.saveAndFlush(alice);
 
         messi = player("Messi", PlayerPosition.FORWARD, new BigDecimal("120.00"));
@@ -50,24 +50,24 @@ class PortfolioRepositoryTest {
     @Test
     void portfolio_canStorePositions_andCalculateDerivedValues() {
         Portfolio portfolio = alice.getPortfolio();
-        portfolio.addOrUpdatePosition(messi, 10, new BigDecimal("100.00"));
+        portfolio.registerPurchase(messi, 10);
         portfolioRepository.saveAndFlush(portfolio);
 
         Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
         Position position = found.getPosition(messi).orElseThrow();
 
         assertThat(position.getTokensAcquired()).isEqualTo(10);
-        assertThat(position.getAveragePurchasePrice()).isEqualByComparingTo("100.0000");
-        assertThat(position.getInvestedAmount()).isEqualByComparingTo("1000.0000");
+        assertThat(position.getAveragePurchasePrice()).isEqualByComparingTo("120.0000");
+        assertThat(position.getInvestedAmount()).isEqualByComparingTo("1200.0000");
         assertThat(position.getCurrentValue()).isEqualByComparingTo("1200.0000");
-        assertThat(position.getProfitLoss()).isEqualByComparingTo("200.0000");
+        assertThat(position.getProfitLoss()).isEqualByComparingTo("0.0000");
     }
 
     @Test
     void portfolio_registerSale_removesPositionWhenBalanceReachesZero() {
         Portfolio portfolio = alice.getPortfolio();
-        portfolio.addOrUpdatePosition(messi, 5, new BigDecimal("100.00"));
-        portfolio.registerSale(messi, 5);
+        portfolio.registerPurchase(messi, 5);
+        portfolio.registerSell(messi, 5);
         portfolioRepository.saveAndFlush(portfolio);
 
         Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
@@ -78,14 +78,14 @@ class PortfolioRepositoryTest {
     @Test
     void version_incrementsOnPositionUpdate() {
         Portfolio portfolio = alice.getPortfolio();
-        portfolio.addOrUpdatePosition(messi, 8, new BigDecimal("100.00"));
+        portfolio.registerPurchase(messi, 8);
         portfolioRepository.saveAndFlush(portfolio);
 
         Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
         Position position = found.getPosition(messi).orElseThrow();
         Long initialVersion = position.getVersion();
 
-        found.addOrUpdatePosition(messi, 2, new BigDecimal("110.00"));
+        found.registerPurchase(messi, 2);
         Portfolio updated = portfolioRepository.saveAndFlush(found);
 
         Position updatedPosition = updated.getPosition(messi).orElseThrow();
@@ -94,11 +94,8 @@ class PortfolioRepositoryTest {
 
     // --- helpers ---
 
-    private User user(String username) {
-        User u = new User();
-        u.setUsername(username);
-        u.setBalance(BigDecimal.ZERO);
-        return u;
+    private User user(String username, BigDecimal balance) {
+        return new User(username, balance, false);
     }
 
     private Player player(String name, PlayerPosition playerPosition, BigDecimal currentTokenPrice) {

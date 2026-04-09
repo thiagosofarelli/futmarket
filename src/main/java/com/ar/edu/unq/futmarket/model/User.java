@@ -31,14 +31,66 @@ public class User {
     @Column(nullable = false)
     private boolean superuser = false;
 
-    @PrePersist
-    private void prePersist() {
-        if (portfolio == null) {
-            portfolio = new Portfolio();
-        }
+    @Version
+    private Long version;
+
+    public User(String username) {
+        this(username, BigDecimal.ZERO, false);
+    }
+
+    public User(String username, BigDecimal balance, boolean superuser) {
+        validateUsername(username);
+        validateNonNegativeBalance(balance);
+        this.username = username.trim();
+        this.balance = balance;
+        this.superuser = superuser;
+        this.portfolio = new Portfolio();
         portfolio.setUser(this);
     }
 
-    @Version
-    private Long version;
+    public void setUsername(String username) {
+        validateUsername(username);
+        this.username = username.trim();
+    }
+
+    public void setBalance(BigDecimal balance) {
+        validateNonNegativeBalance(balance);
+        this.balance = balance;
+    }
+
+    public void addBalance(BigDecimal amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("amount must not be null");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("amount must be > 0");
+        }
+        balance = balance.add(amount);
+    }
+
+    public void subBalance(BigDecimal amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("amount must not be null");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("amount must be >= 0");
+        }
+
+        balance = balance.subtract(amount).max(BigDecimal.ZERO);
+    }
+
+    private void validateUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("username must not be blank");
+        }
+    }
+
+    private void validateNonNegativeBalance(BigDecimal amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("balance must not be null");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("balance must be >= 0");
+        }
+    }
 }

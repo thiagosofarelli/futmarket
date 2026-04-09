@@ -21,18 +21,18 @@ class UserRepositoryTest {
 
     @Test
     void save_and_findById() {
-        User user = regularUser("alice", new BigDecimal("500.00"));
-        userRepository.save(user);
+        User user = new User("alice_save", new BigDecimal("500.00"), false);
+        userRepository.saveAndFlush(user);
 
         User found = userRepository.findById(user.getId()).orElseThrow();
-        assertThat(found.getUsername()).isEqualTo("alice");
+        assertThat(found.getUsername()).isEqualTo("alice_save");
         assertThat(found.getBalance()).isEqualByComparingTo("500.00");
         assertThat(found.isSuperuser()).isFalse();
     }
 
     @Test
     void findByUsername_returnsUser() {
-        userRepository.save(regularUser("bob", BigDecimal.TEN));
+        userRepository.saveAndFlush(regularUser("bob", BigDecimal.TEN));
 
         Optional<User> found = userRepository.findByUsername("bob");
         assertThat(found).isPresent();
@@ -46,8 +46,8 @@ class UserRepositoryTest {
 
     @Test
     void findBySuperuserTrue_returnsSuperuser() {
-        userRepository.save(regularUser("alice", BigDecimal.ZERO));
-        userRepository.save(superUser());
+        userRepository.saveAndFlush(regularUser("alice_super", BigDecimal.ZERO));
+        userRepository.saveAndFlush(superUser());
 
         Optional<User> found = userRepository.findBySuperuserTrue();
         assertThat(found).isPresent();
@@ -56,14 +56,14 @@ class UserRepositoryTest {
 
     @Test
     void findBySuperuserTrue_noSuperuser_returnsEmpty() {
-        userRepository.save(regularUser("alice", BigDecimal.ZERO));
+        userRepository.saveAndFlush(regularUser("alice_no_super", BigDecimal.ZERO));
 
         assertThat(userRepository.findBySuperuserTrue()).isEmpty();
     }
 
     @Test
     void username_mustBeUnique() {
-        userRepository.save(regularUser("duplicate", BigDecimal.ZERO));
+        userRepository.saveAndFlush(regularUser("duplicate", BigDecimal.ZERO));
 
         User another = regularUser("duplicate", BigDecimal.ZERO);
         assertThatThrownBy(() -> userRepository.saveAndFlush(another))
@@ -72,19 +72,12 @@ class UserRepositoryTest {
 
     // --- helpers ---
 
-    private User regularUser(String username, BigDecimal balance) {
-        User u = new User();
-        u.setUsername(username);
-        u.setBalance(balance);
-        return u;
+    private User superUser() {
+        return new User("SUPERUSER", BigDecimal.ZERO, true);
     }
 
-    private User superUser() {
-        User u = new User();
-        u.setUsername("SUPERUSER");
-        u.setBalance(BigDecimal.ZERO);
-        u.setSuperuser(true);
-        return u;
+    private User regularUser(String username, BigDecimal balance) {
+        return new User(username, balance, false);
     }
 }
 
