@@ -1,23 +1,19 @@
 package com.ar.edu.unq.futmarket.repositories;
 
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.enums.Position;
 import com.ar.edu.unq.futmarket.model.Portfolio;
+import com.ar.edu.unq.futmarket.model.Position;
 import com.ar.edu.unq.futmarket.model.User;
-import jakarta.persistence.EntityManager;
+import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
@@ -32,116 +28,68 @@ class PortfolioRepositoryTest {
     @Autowired
     private PlayerRepository playerRepository;
 
-    @Autowired
-    private EntityManager em;
-
     private User alice;
-    private User bob;
     private Player messi;
-    private Player ramos;
 
     @BeforeEach
     void setUp() {
         alice = user("alice");
-        bob = user("bob");
-        userRepository.saveAll(List.of(alice, bob));
+        userRepository.saveAndFlush(alice);
 
-        messi = player("Messi", Position.FORWARD);
-        ramos = player("Ramos", Position.DEFENDER);
-        playerRepository.saveAll(List.of(messi, ramos));
+        messi = player("Messi", PlayerPosition.FORWARD, new BigDecimal("120.00"));
+        playerRepository.saveAndFlush(messi);
     }
 
     @Test
-    void save_and_findById() {
-        Portfolio p = portfolio(alice, messi, 10);
-        portfolioRepository.save(p);
-
-        Portfolio found = portfolioRepository.findById(p.getId()).orElseThrow();
-        assertThat(found.getTokenQuantity()).isEqualTo(10);
-        assertThat(found.getVersion()).isNotNull();
+    void save_user_createsPortfolioAutomatically() {
+        assertThat(alice.getPortfolio()).isNotNull();
+        assertThat(portfolioRepository.findByUser(alice)).isPresent();
+        assertThat(portfolioRepository.findByUserId(alice.getId())).isPresent();
     }
 
     @Test
-    void findByUser_returnsAllPositions() {
-        portfolioRepository.save(portfolio(alice, messi, 5));
-        portfolioRepository.save(portfolio(alice, ramos, 3));
-        portfolioRepository.save(portfolio(bob, messi, 2));
+    void portfolio_canStorePositions_andCalculateDerivedValues() {
+        Portfolio portfolio = alice.getPortfolio();
+        portfolio.addOrUpdatePosition(messi, 10, new BigDecimal("100.00"));
+        portfolioRepository.saveAndFlush(portfolio);
 
-        List<Portfolio> alicePositions = portfolioRepository.findByUser(alice);
-        assertThat(alicePositions).hasSize(2);
+        Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
+        Position position = found.getPosition(messi).orElseThrow();
+
+        assertThat(position.getTokensAcquired()).isEqualTo(10);
+        assertThat(position.getAveragePurchasePrice()).isEqualByComparingTo("100.0000");
+        assertThat(position.getInvestedAmount()).isEqualByComparingTo("1000.0000");
+        assertThat(position.getCurrentValue()).isEqualByComparingTo("1200.0000");
+        assertThat(position.getProfitLoss()).isEqualByComparingTo("200.0000");
     }
 
     @Test
-    void findByUserId_returnsCorrectPositions() {
-        portfolioRepository.save(portfolio(alice, messi, 7));
-        portfolioRepository.save(portfolio(bob, ramos, 1));
+    void portfolio_registerSale_removesPositionWhenBalanceReachesZero() {
+        Portfolio portfolio = alice.getPortfolio();
+        portfolio.addOrUpdatePosition(messi, 5, new BigDecimal("100.00"));
+        portfolio.registerSale(messi, 5);
+        portfolioRepository.saveAndFlush(portfolio);
 
-        assertThat(portfolioRepository.findByUserId(alice.getId())).hasSize(1);
-        assertThat(portfolioRepository.findByUserId(bob.getId())).hasSize(1);
+        Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
+        assertThat(found.getPosition(messi)).isEmpty();
+        assertThat(found.getPositions()).isEmpty();
     }
 
     @Test
-    void findByUserAndPlayer_returnsHolding() {
-        portfolioRepository.save(portfolio(alice, messi, 4));
+    void version_incrementsOnPositionUpdate() {
+        Portfolio portfolio = alice.getPortfolio();
+        portfolio.addOrUpdatePosition(messi, 8, new BigDecimal("100.00"));
+        portfolioRepository.saveAndFlush(portfolio);
 
-        Optional<Portfolio> found = portfolioRepository.findByUserAndPlayer(alice, messi);
-        assertThat(found).isPresent();
-        assertThat(found.get().getTokenQuantity()).isEqualTo(4);
-    }
+        Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
+        Position position = found.getPosition(messi).orElseThrow();
+        Long initialVersion = position.getVersion();
 
-    @Test
-    void findByUserIdAndPlayerId_returnsHolding() {
-        portfolioRepository.save(portfolio(alice, ramos, 6));
+        found.addOrUpdatePosition(messi, 2, new BigDecimal("110.00"));
+        Portfolio updated = portfolioRepository.saveAndFlush(found);
 
-        Optional<Portfolio> found = portfolioRepository.findByUserIdAndPlayerId(alice.getId(), ramos.getId());
-        assertThat(found).isPresent();
-        assertThat(found.get().getTokenQuantity()).isEqualTo(6);
-    }
-
-    @Test
-    void findByUserAndPlayer_noMatch_returnsEmpty() {
-        assertThat(portfolioRepository.findByUserAndPlayer(alice, messi)).isEmpty();
-    }
-
-    @Test
-    void userAndPlayer_uniqueConstraint_preventsduplicates() {
-        portfolioRepository.saveAndFlush(portfolio(alice, messi, 5));
-
-        Portfolio duplicate = portfolio(alice, messi, 3);
-        assertThatThrownBy(() -> portfolioRepository.saveAndFlush(duplicate))
-                .isInstanceOf(Exception.class);
-    }
-
-    @Test
-    void version_incrementsOnUpdate() {
-        Portfolio p = portfolioRepository.save(portfolio(alice, messi, 5));
-        Long initialVersion = p.getVersion();
-
-        p.setTokenQuantity(8);
-        Portfolio updated = portfolioRepository.saveAndFlush(p);
-
-        assertThat(updated.getVersion()).isGreaterThan(initialVersion);
-    }
-
-    @Test
-    void optimisticLock_preventsStaleUpdate() {
-        Portfolio p = portfolioRepository.saveAndFlush(portfolio(alice, messi, 10));
-        em.clear(); // evict from L1 cache so the next two loads are separate Java objects
-
-        // Load stale reader (version=0), then evict it from L1 cache
-        Portfolio stale = portfolioRepository.findById(p.getId()).orElseThrow();
-        em.clear(); // stale is now detached â€” independent Java object with version=0
-
-        // Load fresh reader (version=0) and update it â†’ DB version becomes 1
-        Portfolio fresh = portfolioRepository.findById(p.getId()).orElseThrow();
-        fresh.setTokenQuantity(15);
-        portfolioRepository.saveAndFlush(fresh); // DB: version=1
-        em.clear();
-
-        // stale is detached with version=0; DB has version=1 â†’ must fail
-        stale.setTokenQuantity(20);
-        assertThatThrownBy(() -> portfolioRepository.saveAndFlush(stale))
-                .isInstanceOf(ObjectOptimisticLockingFailureException.class);
+        Position updatedPosition = updated.getPosition(messi).orElseThrow();
+        assertThat(updatedPosition.getVersion()).isGreaterThan(initialVersion);
     }
 
     // --- helpers ---
@@ -153,21 +101,13 @@ class PortfolioRepositoryTest {
         return u;
     }
 
-    private Player player(String name, Position position) {
+    private Player player(String name, PlayerPosition playerPosition, BigDecimal currentTokenPrice) {
         Player p = new Player();
         p.setName(name);
         p.setTeam("Team A");
         p.setLeague("League A");
-        p.setPosition(position);
-        return p;
-    }
-
-    private Portfolio portfolio(User user, Player player, int quantity) {
-        Portfolio p = new Portfolio();
-        p.setUser(user);
-        p.setPlayer(player);
-        p.setTokenQuantity(quantity);
+        p.setPlayerPosition(playerPosition);
+        p.setCurrentTokenPrice(currentTokenPrice);
         return p;
     }
 }
-

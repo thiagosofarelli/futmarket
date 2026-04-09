@@ -1,6 +1,6 @@
 package com.ar.edu.unq.futmarket.model;
 
-import com.ar.edu.unq.futmarket.model.enums.Position;
+import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,13 +30,16 @@ public class Player {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Position position;
+    private PlayerPosition playerPosition;
+
+    @Column(nullable = false, updatable = false)
+    private int issuedTokens = 100;
 
     @Column(nullable = false)
-    private int totalTokens = 100;
+    private int availableTokens = 100;
 
     @Column(nullable = false, precision = 10, scale = 4)
-    private BigDecimal currentValue = BigDecimal.ONE;
+    private BigDecimal currentTokenPrice = BigDecimal.ONE;
 
     private double goals;
     private double assists;
@@ -49,5 +52,8 @@ public class Player {
 
     @Column(unique = true)
     private Long externalId;
+
+    @Version
+    private Long version;
 }
 

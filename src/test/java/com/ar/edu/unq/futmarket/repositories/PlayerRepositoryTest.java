@@ -1,7 +1,7 @@
 package com.ar.edu.unq.futmarket.repositories;
 
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.enums.Position;
+import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +23,9 @@ class PlayerRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        messi = player("Messi", "Inter Miami", "MLS", Position.FORWARD);
-        Player ronaldo = player("Ronaldo", "Al Nassr", "Saudi Pro League", Position.FORWARD);
-        Player ramos = player("Ramos", "Inter Miami", "MLS", Position.DEFENDER);
+        messi = player("Messi", "Inter Miami", "MLS", PlayerPosition.FORWARD);
+        Player ronaldo = player("Ronaldo", "Al Nassr", "Saudi Pro League", PlayerPosition.FORWARD);
+        Player ramos = player("Ramos", "Inter Miami", "MLS", PlayerPosition.DEFENDER);
         playerRepository.saveAll(List.of(messi, ronaldo, ramos));
     }
 
@@ -33,7 +33,7 @@ class PlayerRepositoryTest {
     void save_and_findById() {
         Player found = playerRepository.findById(messi.getId()).orElseThrow();
         assertThat(found.getName()).isEqualTo("Messi");
-        assertThat(found.getTotalTokens()).isEqualTo(100);
+        assertThat(found.getAvailableTokens()).isEqualTo(100);
     }
 
     @Test
@@ -56,8 +56,8 @@ class PlayerRepositoryTest {
     }
 
     @Test
-    void findByPosition_returnsForwards() {
-        List<Player> forwards = playerRepository.findByPosition(Position.FORWARD);
+    void findByPlayerPosition_returnsForwards() {
+        List<Player> forwards = playerRepository.findByPlayerPosition(PlayerPosition.FORWARD);
         assertThat(forwards).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ronaldo");
@@ -70,8 +70,8 @@ class PlayerRepositoryTest {
     }
 
     @Test
-    void findByLeagueAndPosition_returnsDefendersInMLS() {
-        List<Player> result = playerRepository.findByLeagueAndPosition("MLS", Position.DEFENDER);
+    void findByLeagueAndPlayerPosition_returnsDefendersInMLS() {
+        List<Player> result = playerRepository.findByLeagueAndPlayerPosition("MLS", PlayerPosition.DEFENDER);
         assertThat(result).hasSize(1)
                 .extracting(Player::getName)
                 .containsExactly("Ramos");
@@ -80,19 +80,18 @@ class PlayerRepositoryTest {
     @Test
     void defaultValues_areCorrect() {
         Player p = playerRepository.findById(messi.getId()).orElseThrow();
-        assertThat(p.getTotalTokens()).isEqualTo(100);
-        assertThat(p.getCurrentValue()).isEqualByComparingTo("1");
+        assertThat(p.getAvailableTokens()).isEqualTo(100);
+        assertThat(p.getCurrentTokenPrice()).isEqualByComparingTo("1");
     }
 
     // --- helpers ---
 
-    private Player player(String name, String team, String league, Position position) {
+    private Player player(String name, String team, String league, PlayerPosition playerPosition) {
         Player p = new Player();
         p.setName(name);
         p.setTeam(team);
         p.setLeague(league);
-        p.setPosition(position);
+        p.setPlayerPosition(playerPosition);
         return p;
     }
 }
-

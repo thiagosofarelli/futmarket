@@ -4,7 +4,7 @@ import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.enums.OrderStatus;
 import com.ar.edu.unq.futmarket.model.enums.OrderType;
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.enums.Position;
+import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,8 +43,8 @@ class OrderRepositoryTest {
         superuser.setSuperuser(true);
         userRepository.saveAll(List.of(alice, superuser));
 
-        messi = player("Messi", Position.FORWARD);
-        ramos = player("Ramos", Position.DEFENDER);
+        messi = player("Messi", PlayerPosition.FORWARD);
+        ramos = player("Ramos", PlayerPosition.DEFENDER);
         playerRepository.saveAll(List.of(messi, ramos));
     }
 
@@ -128,12 +128,12 @@ class OrderRepositoryTest {
         return u;
     }
 
-    private Player player(String name, Position position) {
+    private Player player(String name, PlayerPosition playerPosition) {
         Player p = new Player();
         p.setName(name);
         p.setTeam("Team A");
         p.setLeague("League A");
-        p.setPosition(position);
+        p.setPlayerPosition(playerPosition);
         return p;
     }
 
