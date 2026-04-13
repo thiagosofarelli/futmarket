@@ -55,14 +55,16 @@ class PositionTest {
 
     @Test
     void registerPurchase_zeroQuantity_throws() {
+        BigDecimal price = new BigDecimal("5.00");
         assertThrows(IllegalArgumentException.class,
-                () -> position.registerPurchase(0, new BigDecimal("5.00")));
+                () -> position.registerPurchase(0, price));
     }
 
     @Test
     void registerPurchase_negativeQuantity_throws() {
+        BigDecimal price = new BigDecimal("5.00");
         assertThrows(IllegalArgumentException.class,
-                () -> position.registerPurchase(-1, new BigDecimal("5.00")));
+                () -> position.registerPurchase(-1, price));
     }
 
     @Test
@@ -79,15 +81,17 @@ class PositionTest {
 
     @Test
     void registerPurchase_negativePricePerToken_throws() {
+        BigDecimal negativePrice = new BigDecimal("-1.00");
         assertThrows(IllegalArgumentException.class,
-                () -> position.registerPurchase(10, new BigDecimal("-1.00")));
+                () -> position.registerPurchase(10, negativePrice));
     }
 
     @Test
     void registerPurchase_nullPlayer_throws() {
         position.setPlayer(null);
+        BigDecimal price = new BigDecimal("5.00");
         assertThrows(IllegalStateException.class,
-                () -> position.registerPurchase(10, new BigDecimal("5.00")));
+                () -> position.registerPurchase(10, price));
     }
 
     // --- registerSell ---

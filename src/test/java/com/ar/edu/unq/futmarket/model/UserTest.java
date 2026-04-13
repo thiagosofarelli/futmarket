@@ -53,8 +53,9 @@ class UserTest {
 
     @Test
     void constructor_negativeBalance_throws() {
+        BigDecimal negativeBalance = new BigDecimal("-1");
         assertThrows(IllegalArgumentException.class,
-                () -> new User("user", new BigDecimal("-1"), false));
+                () -> new User("user", negativeBalance, false));
     }
 
     @Test
@@ -116,7 +117,8 @@ class UserTest {
     @Test
     void addBalance_negative_throws() {
         User user = new User("leandro");
-        assertThrows(IllegalArgumentException.class, () -> user.addBalance(new BigDecimal("-100")));
+        BigDecimal negativeAmount = new BigDecimal("-100");
+        assertThrows(IllegalArgumentException.class, () -> user.addBalance(negativeAmount));
     }
 
     // --- subBalance ---
@@ -151,6 +153,7 @@ class UserTest {
     @Test
     void subBalance_negative_throws() {
         User user = new User("leandro", new BigDecimal("1000.00"), false);
-        assertThrows(IllegalArgumentException.class, () -> user.subBalance(new BigDecimal("-100")));
+        BigDecimal negativeAmount = new BigDecimal("-100");
+        assertThrows(IllegalArgumentException.class, () -> user.subBalance(negativeAmount));
     }
 }
