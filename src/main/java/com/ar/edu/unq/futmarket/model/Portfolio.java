@@ -88,7 +88,6 @@ public class Portfolio {
                 .orElseThrow(() -> new IllegalArgumentException("The portfolio does not have a position."));
 
         position.registerSell(tokensQuantity);
-        user.addBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
 
         if (position.getTokensAcquired() == 0) {
             positions.remove(position);
