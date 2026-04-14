@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class SellRequest {
-    private Long sellerId;
     private Long playerId;
     private int quantity;
 }
