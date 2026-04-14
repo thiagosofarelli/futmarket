@@ -46,9 +46,11 @@ jobs:
 
     permissions:
       contents: write
+      security-events: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17 and Maven
         uses: actions/setup-java@v4
@@ -57,7 +59,7 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Submit dependency graph
+      - name: Submit dependency graph to GitHub
         uses: advanced-security/maven-dependency-submission-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
