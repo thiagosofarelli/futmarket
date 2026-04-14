@@ -1,5 +1,8 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import com.ar.edu.unq.futmarket.exception.OrderNotFoundException;
+import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
+import com.ar.edu.unq.futmarket.exception.PortfolioNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +31,21 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiError> handleUserNotFound(UserNotFoundException ex) {
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(PlayerNotFoundException.class)
+    public ResponseEntity<ApiError> handlePlayerNotFound(PlayerNotFoundException ex) {
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(PortfolioNotFoundException.class)
+    public ResponseEntity<ApiError> handlePortfolioNotFound(PortfolioNotFoundException ex) {
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ApiError> handleOrderNotFound(OrderNotFoundException ex) {
         return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
     }
 

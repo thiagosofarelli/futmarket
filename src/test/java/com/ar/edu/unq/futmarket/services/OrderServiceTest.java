@@ -1,5 +1,7 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
+import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.User;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -46,7 +49,7 @@ class OrderServiceTest {
 
     @Test
     void buy_returnsCompletedOrder() {
-        Order order = orderService.buy(alice.getId(), messi.getId(), 5);
+        Order order = orderService.buy(userDetailsOf(alice), messi.getId(), 5);
 
         assertThat(order.getId()).isNotNull();
         assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
@@ -58,7 +61,7 @@ class OrderServiceTest {
 
     @Test
     void buy_setsCorrectBuyerAndSeller() {
-        Order order = orderService.buy(alice.getId(), messi.getId(), 3);
+        Order order = orderService.buy(userDetailsOf(alice), messi.getId(), 3);
 
         assertThat(order.getBuyer().getUsername()).isEqualTo("alice");
         assertThat(order.getSeller().isSuperuser()).isTrue();
@@ -66,7 +69,7 @@ class OrderServiceTest {
 
     @Test
     void buy_deductsBuyerBalance() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
 
         User updated = userRepository.findById(alice.getId()).orElseThrow();
         assertThat(updated.getBalance()).isEqualByComparingTo("950.00");
@@ -74,7 +77,7 @@ class OrderServiceTest {
 
     @Test
     void buy_decrementsPlayerAvailableTokens() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
 
         Player updated = playerRepository.findById(messi.getId()).orElseThrow();
         assertThat(updated.getAvailableTokens()).isEqualTo(95);
@@ -82,7 +85,7 @@ class OrderServiceTest {
 
     @Test
     void buy_createsPositionInBuyerPortfolio() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
 
         User updated = userRepository.findById(alice.getId()).orElseThrow();
         assertThat(updated.getPortfolio().getPosition(messi)).isPresent();
@@ -90,15 +93,18 @@ class OrderServiceTest {
     }
 
     @Test
-    void buy_playerNotFound_throwsEntityNotFoundException() {
-        assertThatThrownBy(() -> orderService.buy(alice.getId(), -1L, 5))
-                .isInstanceOf(EntityNotFoundException.class);
+    void buy_playerNotFound_throwsPlayerNotFoundException() {
+        UserDetails aliceDetails = userDetailsOf(alice);
+        assertThatThrownBy(() -> orderService.buy(aliceDetails, -1L, 5))
+                .isInstanceOf(PlayerNotFoundException.class);
     }
 
     @Test
-    void buy_userNotFound_throwsEntityNotFoundException() {
-        assertThatThrownBy(() -> orderService.buy(-1L, messi.getId(), 5))
-                .isInstanceOf(EntityNotFoundException.class);
+    void buy_userNotFound_throwsUserNotFoundException() {
+        UserDetails unknownDetails = unknownUserDetails();
+        Long messiId = messi.getId();
+        assertThatThrownBy(() -> orderService.buy(unknownDetails, messiId, 5))
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -106,24 +112,27 @@ class OrderServiceTest {
         messi.setAvailableTokens(3);
         playerRepository.save(messi);
 
-        assertThatThrownBy(() -> orderService.buy(alice.getId(), messi.getId(), 5))
+        UserDetails aliceDetails = userDetailsOf(alice);
+        Long messiId = messi.getId();
+        assertThatThrownBy(() -> orderService.buy(aliceDetails, messiId, 5))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void buy_notEnoughBalance_throwsIllegalArgumentException() {
-        BigDecimal highPrice = new BigDecimal("300.00");
-        messi.setCurrentTokenPrice(highPrice);
+        messi.setCurrentTokenPrice(new BigDecimal("300.00"));
         playerRepository.save(messi);
 
-        assertThatThrownBy(() -> orderService.buy(alice.getId(), messi.getId(), 4))
+        UserDetails aliceDetails = userDetailsOf(alice);
+        Long messiId = messi.getId();
+        assertThatThrownBy(() -> orderService.buy(aliceDetails, messiId, 4))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void sell_returnsCompletedOrder() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
-        Order order = orderService.sell(alice.getId(), messi.getId(), 3);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
+        Order order = orderService.sell(userDetailsOf(alice), messi.getId(), 3);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
         assertThat(order.getType()).isEqualTo(OrderType.SELL);
@@ -133,8 +142,8 @@ class OrderServiceTest {
 
     @Test
     void sell_setsCorrectBuyerAndSeller() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
-        Order order = orderService.sell(alice.getId(), messi.getId(), 3);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
+        Order order = orderService.sell(userDetailsOf(alice), messi.getId(), 3);
 
         assertThat(order.getSeller().getUsername()).isEqualTo("alice");
         assertThat(order.getBuyer().isSuperuser()).isTrue();
@@ -142,8 +151,8 @@ class OrderServiceTest {
 
     @Test
     void sell_creditsSellerBalance() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
-        orderService.sell(alice.getId(), messi.getId(), 3);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
+        orderService.sell(userDetailsOf(alice), messi.getId(), 3);
 
         User updated = userRepository.findById(alice.getId()).orElseThrow();
         assertThat(updated.getBalance()).isEqualByComparingTo("980.00");
@@ -151,8 +160,8 @@ class OrderServiceTest {
 
     @Test
     void sell_restoresPlayerAvailableTokens() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
-        orderService.sell(alice.getId(), messi.getId(), 3);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
+        orderService.sell(userDetailsOf(alice), messi.getId(), 3);
 
         Player updated = playerRepository.findById(messi.getId()).orElseThrow();
         assertThat(updated.getAvailableTokens()).isEqualTo(98);
@@ -160,22 +169,26 @@ class OrderServiceTest {
 
     @Test
     void sell_noPosition_throwsIllegalArgumentException() {
-        assertThatThrownBy(() -> orderService.sell(alice.getId(), messi.getId(), 3))
+        UserDetails aliceDetails = userDetailsOf(alice);
+        Long messiId = messi.getId();
+        assertThatThrownBy(() -> orderService.sell(aliceDetails, messiId, 3))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void sell_moreThanHeld_throwsIllegalArgumentException() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
 
-        assertThatThrownBy(() -> orderService.sell(alice.getId(), messi.getId(), 10))
+        UserDetails aliceDetails = userDetailsOf(alice);
+        Long messiId = messi.getId();
+        assertThatThrownBy(() -> orderService.sell(aliceDetails, messiId, 10))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void getTransactionsByUserId_combinesBuyAndSellOrders() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
-        orderService.sell(alice.getId(), messi.getId(), 2);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
+        orderService.sell(userDetailsOf(alice), messi.getId(), 2);
 
         List<Order> transactions = orderService.getTransactionsByUserId(alice.getId());
         assertThat(transactions).hasSize(2);
@@ -183,8 +196,8 @@ class OrderServiceTest {
 
     @Test
     void getTransactionsByUserId_returnsSortedByCreatedAtDesc() {
-        orderService.buy(alice.getId(), messi.getId(), 5);
-        orderService.sell(alice.getId(), messi.getId(), 2);
+        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
+        orderService.sell(userDetailsOf(alice), messi.getId(), 2);
 
         List<Order> transactions = orderService.getTransactionsByUserId(alice.getId());
         assertThat(transactions.get(0).getCreatedAt())
@@ -194,6 +207,22 @@ class OrderServiceTest {
     @Test
     void getTransactionsByUserId_noOrders_returnsEmpty() {
         assertThat(orderService.getTransactionsByUserId(alice.getId())).isEmpty();
+    }
+
+    private UserDetails userDetailsOf(User user) {
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password("")
+                .roles("USER")
+                .build();
+    }
+
+    private UserDetails unknownUserDetails() {
+        return org.springframework.security.core.userdetails.User.builder()
+                .username("unknown-user")
+                .password("")
+                .roles("USER")
+                .build();
     }
 
     private Player player(String name, PlayerPosition position, String price) {

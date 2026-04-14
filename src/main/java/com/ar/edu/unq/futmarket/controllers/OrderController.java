@@ -7,6 +7,8 @@ import com.ar.edu.unq.futmarket.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,14 +19,16 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/buy")
-    public ResponseEntity<Order> buy(@RequestBody BuyRequest request) {
-        Order order = orderService.buy(request.getBuyerId(), request.getPlayerId(), request.getQuantity());
+    public ResponseEntity<Order> buy(@RequestBody BuyRequest request,
+                                     @AuthenticationPrincipal UserDetails userDetails) {
+        Order order = orderService.buy(userDetails, request.getPlayerId(), request.getQuantity());
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<Order> sell(@RequestBody SellRequest request) {
-        Order order = orderService.sell(request.getSellerId(), request.getPlayerId(), request.getQuantity());
+    public ResponseEntity<Order> sell(@RequestBody SellRequest request,
+                                      @AuthenticationPrincipal UserDetails userDetails) {
+        Order order = orderService.sell(userDetails, request.getPlayerId(), request.getQuantity());
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 }

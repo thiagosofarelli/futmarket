@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,16 +14,16 @@ public class UserService {
 
     public User findById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + id));
+                .orElseThrow(UserNotFoundException::new);
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+                .orElseThrow(UserNotFoundException::new);
     }
 
     public User findSuperuser() {
         return userRepository.findBySuperuserTrue()
-                .orElseThrow(() -> new EntityNotFoundException("Superuser not found"));
+                .orElseThrow(UserNotFoundException::new);
     }
 }

@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
@@ -50,9 +51,9 @@ class PlayerServiceTest {
     }
 
     @Test
-    void findById_notFound_throwsEntityNotFoundException() {
+    void findById_notFound_throwsPlayerNotFoundException() {
         assertThatThrownBy(() -> playerService.findById(-1L))
-                .isInstanceOf(EntityNotFoundException.class);
+                .isInstanceOf(PlayerNotFoundException.class);
     }
 
     @Test

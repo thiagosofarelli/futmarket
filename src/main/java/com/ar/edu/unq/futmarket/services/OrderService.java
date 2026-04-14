@@ -10,6 +10,7 @@ import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,8 +30,8 @@ public class OrderService {
     private final PlayerRepository playerRepository;
 
     @Transactional
-    public Order buy(Long buyerId, Long playerId, int quantity) {
-        User buyer = userService.findById(buyerId);
+    public Order buy(UserDetails buyerDetails, Long playerId, int quantity) {
+        User buyer = userService.findByUsername(buyerDetails.getUsername());
         Player player = playerService.findById(playerId);
         User superuser = userService.findSuperuser();
 
@@ -44,8 +45,8 @@ public class OrderService {
     }
 
     @Transactional
-    public Order sell(Long sellerId, Long playerId, int quantity) {
-        User seller = userService.findById(sellerId);
+    public Order sell(UserDetails sellerDetails, Long playerId, int quantity) {
+        User seller = userService.findByUsername(sellerDetails.getUsername());
         Player player = playerService.findById(playerId);
         User superuser = userService.findSuperuser();
 

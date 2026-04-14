@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,10 +40,9 @@ class UserServiceTest {
     }
 
     @Test
-    void findById_notFound_throwsEntityNotFoundException() {
+    void findById_notFound_throwsUserNotFoundException() {
         assertThatThrownBy(() -> userService.findById(-1L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("-1");
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -52,9 +52,9 @@ class UserServiceTest {
     }
 
     @Test
-    void findByUsername_notFound_throwsEntityNotFoundException() {
+    void findByUsername_notFound_throwsUserNotFoundException() {
         assertThatThrownBy(() -> userService.findByUsername("unknown"))
-                .isInstanceOf(EntityNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
@@ -65,9 +65,9 @@ class UserServiceTest {
     }
 
     @Test
-    void findSuperuser_noSuperuser_throwsEntityNotFoundException() {
+    void findSuperuser_noSuperuser_throwsUserNotFoundException() {
         userRepository.delete(superuser);
         assertThatThrownBy(() -> userService.findSuperuser())
-                .isInstanceOf(EntityNotFoundException.class);
+                .isInstanceOf(UserNotFoundException.class);
     }
 }

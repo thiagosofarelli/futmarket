@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
@@ -21,7 +22,7 @@ public class PlayerService {
 
     public Player findById(Long id) {
         return playerRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Player not found: " + id));
+                .orElseThrow(PlayerNotFoundException::new);
     }
 
     public List<Player> findByFilters(String league, String team, PlayerPosition position) {

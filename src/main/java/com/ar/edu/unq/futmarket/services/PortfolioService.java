@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.PortfolioNotFoundException;
 import com.ar.edu.unq.futmarket.model.Portfolio;
 import com.ar.edu.unq.futmarket.repositories.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,6 @@ public class PortfolioService {
 
     public Portfolio findByUserId(Long userId) {
         return portfolioRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Portfolio not found for user: " + userId));
+                .orElseThrow(PortfolioNotFoundException::new);
     }
 }

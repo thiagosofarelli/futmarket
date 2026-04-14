@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.PortfolioNotFoundException;
 import com.ar.edu.unq.futmarket.model.Portfolio;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
@@ -39,9 +40,8 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void findByUserId_notFound_throwsEntityNotFoundException() {
+    void findByUserId_notFound_throwsPortfolioNotFoundException() {
         assertThatThrownBy(() -> portfolioService.findByUserId(-1L))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("-1");
+                .isInstanceOf(PortfolioNotFoundException.class);
     }
 }
