@@ -1,0 +1,393 @@
+openapi: 3.0.3
+info:
+  title: FutMarket API
+  description: API REST para el mercado de tokens de jugadores de fútbol.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo
+paths:
+  /players:
+    get:
+      summary: Listado de jugadores
+      description: Obtiene el catálogo de jugadores. Se pueden filtrar por liga, equipo o posición.
+      parameters:
+        - in: query
+          name: league
+          schema:
+            type: string
+          description: Filtrar por liga.
+        - in: query
+          name: team
+          schema:
+            type: string
+          description: Filtrar por equipo.
+        - in: query
+          name: position
+          schema:
+            type: string
+            enum: [FORWARD, MIDFIELDER, DEFENDER, GOALKEEPER]
+          description: Filtrar por posición.
+      responses:
+        '200':
+          description: Lista de jugadores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+  /players/{id}:
+    get:
+      summary: Detalle de jugador
+      description: Obtiene la información completa de un jugador por su ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del jugador.
+      responses:
+        '200':
+          description: Jugador encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        '404':
+          description: Jugador no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /players/{id}/quotes:
+    get:
+      summary: Historial de cotizaciones
+      description: Obtiene las cotizaciones históricas de un jugador.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del jugador.
+      responses:
+        '200':
+          description: Historial de cotizaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        '404':
+          description: Jugador no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /players/ranking:
+    get:
+      summary: Ranking de jugadores
+      description: Recupera el ranking de jugadores según la estrategia de valoración activa.
+      responses:
+        '200':
+          description: Ranking calculado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayerRanking'
+  /quotes/recalculate:
+    post:
+      summary: Recalcular cotizaciones
+      description: Ejecuta una recalculación manual de cotizaciones para todos los jugadores.
+      responses:
+        '200':
+          description: Cotizaciones recalculadas correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+  /orders/buy:
+    post:
+      summary: Comprar tokens de jugador
+      description: Compra tokens de un jugador para un usuario específico.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeRequest'
+      responses:
+        '201':
+          description: Orden de compra creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '400':
+          description: Validación inválida o saldo insuficiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /orders/sell:
+    post:
+      summary: Vender tokens de jugador
+      description: Vende tokens de un jugador desde el portafolio de un usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeRequest'
+      responses:
+        '201':
+          description: Orden de venta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '400':
+          description: Validación inválida o tokens insuficientes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users/{id}/portfolio:
+    get:
+      summary: Portfolio del usuario
+      description: Obtiene el portafolio actual de un usuario, incluyendo posiciones, valor y P&L.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
+      responses:
+        '200':
+          description: Portafolio del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /users/{id}/transactions:
+    get:
+      summary: Historial de operaciones
+      description: Lista las órdenes realizadas por un usuario.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario.
+      responses:
+        '200':
+          description: Historial de transacciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Player:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        team:
+          type: string
+        league:
+          type: string
+        playerPosition:
+          type: string
+          enum: [FORWARD, MIDFIELDER, DEFENDER, GOALKEEPER]
+        issuedTokens:
+          type: integer
+          example: 100
+        availableTokens:
+          type: integer
+        currentTokenPrice:
+          type: number
+          format: double
+        goals:
+          type: number
+          format: double
+        assists:
+          type: number
+          format: double
+        shots:
+          type: number
+          format: double
+        keyPasses:
+          type: number
+          format: double
+        dribbles:
+          type: number
+          format: double
+        tackles:
+          type: number
+          format: double
+        interceptions:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+        externalId:
+          type: integer
+      required: [id, name, team, league, playerPosition, availableTokens, currentTokenPrice]
+    Quote:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerId:
+          type: integer
+        currentTokenPrice:
+          type: number
+          format: double
+        strategy:
+          type: string
+          enum: [GENERAL_PERFORMANCE, POSITION_WEIGHTED]
+        score:
+          type: number
+          format: double
+        calculatedAt:
+          type: string
+          format: date-time
+      required: [id, playerId, currentTokenPrice, strategy, score, calculatedAt]
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        buyerId:
+          type: integer
+        sellerId:
+          type: integer
+        playerId:
+          type: integer
+        type:
+          type: string
+          enum: [BUY, SELL]
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED]
+        tokenQuantity:
+          type: integer
+        pricePerToken:
+          type: number
+          format: double
+        totalAmount:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, buyerId, sellerId, playerId, type, status, tokenQuantity, pricePerToken, totalAmount, createdAt]
+    TradeRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+        playerId:
+          type: integer
+        tokenQuantity:
+          type: integer
+      required: [userId, playerId, tokenQuantity]
+    PortfolioResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        currentValue:
+          type: number
+          format: double
+        profitLoss:
+          type: number
+          format: double
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+      required: [id, userId, currentValue, profitLoss, positions]
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerId:
+          type: integer
+        tokensAcquired:
+          type: integer
+        averagePurchasePrice:
+          type: number
+          format: double
+        currentValue:
+          type: number
+          format: double
+        profitLoss:
+          type: number
+          format: double
+      required: [id, playerId, tokensAcquired, averagePurchasePrice, currentValue, profitLoss]
+    PlayerRanking:
+      type: object
+      properties:
+        playerId:
+          type: integer
+        rank:
+          type: integer
+        score:
+          type: number
+          format: double
+        currentTokenPrice:
+          type: number
+          format: double
+        strategy:
+          type: string
+          enum: [GENERAL_PERFORMANCE, POSITION_WEIGHTED]
+      required: [playerId, rank, score, currentTokenPrice, strategy]
+    StatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        message:
+          type: string
+      required: [status, message]
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error, message]
