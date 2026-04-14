@@ -152,6 +152,11 @@ All extend `JpaRepository<Entity, Long>`:
 - Log all operations and quote recalculations for auditability
 - Idempotent operations — no duplicates on retry
 
+## Valuation Configuration (application.properties)
+- `futmarket.valuation.base-value` — baseline token price added to every score (default: `1.0`)
+- `futmarket.valuation.scale-factor` — multiplier applied to the score (default: `10.0`)
+- Formula: `newPrice = baseValue + (score × scaleFactor)`
+
 ## Non-functional Requirements
 - Atomic buy/sell transactions
 - Concurrency handling via optimistic locking (`@Version` on Player, User, Portfolio, Position)
@@ -171,7 +176,7 @@ All extend `JpaRepository<Entity, Long>`:
 - [x] Enums: PlayerPosition, ValuationStrategy, OrderType, OrderStatus
 - [x] Repositories: Player, User, Portfolio, Position, Quote, Order
 - [x] Domain logic in Portfolio and Position (buy/sell, average price, P&L)
-- [ ] Service layer implementation (stubs exist)
+- [x] Service layer implementation (PlayerService, UserService, OrderService, QuoteService, PortfolioService)
 - [ ] Controllers (REST endpoints)
 - [ ] Valuation strategy calculation logic
 - [ ] Weekly recalculation scheduler (Spring Scheduler)

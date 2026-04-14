@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,10 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String username;
+
+    @JsonIgnore
+    @Column
+    private String password;
 
     @OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "portfolio_id", nullable = false, unique = true)
