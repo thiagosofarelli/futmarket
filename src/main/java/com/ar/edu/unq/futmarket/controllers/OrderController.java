@@ -5,6 +5,7 @@ import com.ar.edu.unq.futmarket.controllers.request.BuyRequest;
 import com.ar.edu.unq.futmarket.controllers.request.SellRequest;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.services.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class OrderController {
     private final ModelMapper modelMapper;
 
     @PostMapping("/buy")
-    public ResponseEntity<OrderDTO> buy(@RequestBody BuyRequest request,
+    public ResponseEntity<OrderDTO> buy(@Valid @RequestBody BuyRequest request,
                                      @AuthenticationPrincipal UserDetails userDetails) {
         Order order = orderService.buy(userDetails, request.getPlayerId(), request.getQuantity());
         OrderDTO dto = modelMapper.map(order, OrderDTO.class);
@@ -33,7 +34,7 @@ public class OrderController {
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<OrderDTO> sell(@RequestBody SellRequest request,
+    public ResponseEntity<OrderDTO> sell(@Valid @RequestBody SellRequest request,
                                       @AuthenticationPrincipal UserDetails userDetails) {
         Order order = orderService.sell(userDetails, request.getPlayerId(), request.getQuantity());
         OrderDTO dto = modelMapper.map(order, OrderDTO.class);

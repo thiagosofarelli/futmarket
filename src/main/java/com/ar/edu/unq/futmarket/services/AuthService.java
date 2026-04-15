@@ -2,6 +2,7 @@ package com.ar.edu.unq.futmarket.services;
 
 import com.ar.edu.unq.futmarket.controllers.request.LoginRequest;
 import com.ar.edu.unq.futmarket.controllers.request.RegisterRequest;
+import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
 import com.ar.edu.unq.futmarket.exception.InvalidCredentialsException;
 import com.ar.edu.unq.futmarket.exception.UsernameAlreadyExistsException;
 import com.ar.edu.unq.futmarket.model.User;
@@ -36,20 +37,21 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
-    public User register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new UsernameAlreadyExistsException();
         }
         User user = new User(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        return userRepository.save(user);
+        userRepository.save(user);
+        return new AuthResponse(jwtService.generateToken(request.getUsername()));
     }
 
-    public User login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         UserDetails userDetails = loadUserByUsername(request.getUsername());
         if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
             throw new InvalidCredentialsException();
         }
-        return userService.findByUsername(request.getUsername());
+        return new AuthResponse(jwtService.generateToken(request.getUsername()));
     }
 }
