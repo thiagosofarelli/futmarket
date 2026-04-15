@@ -1,7 +1,7 @@
 package com.ar.edu.unq.futmarket.controllers;
 
 import com.ar.edu.unq.futmarket.controllers.dto.QuoteDTO;
-import com.ar.edu.unq.futmarket.controllers.response.RecalculateRequest;
+import com.ar.edu.unq.futmarket.controllers.request.RecalculateRequest;
 import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.services.QuoteService;
 import lombok.RequiredArgsConstructor;

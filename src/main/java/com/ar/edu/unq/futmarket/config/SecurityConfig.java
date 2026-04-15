@@ -28,8 +28,9 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/auth/**", "/users/**", "/players/**", "/quotes/**", "/orders/user/**", "/portfolios/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/orders/buy", "/orders/sell").authenticated()
+                .anyRequest().permitAll()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

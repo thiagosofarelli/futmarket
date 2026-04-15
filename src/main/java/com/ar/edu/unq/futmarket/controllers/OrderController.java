@@ -1,8 +1,8 @@
 package com.ar.edu.unq.futmarket.controllers;
 
 import com.ar.edu.unq.futmarket.controllers.dto.OrderDTO;
-import com.ar.edu.unq.futmarket.controllers.response.BuyRequest;
-import com.ar.edu.unq.futmarket.controllers.response.SellRequest;
+import com.ar.edu.unq.futmarket.controllers.request.BuyRequest;
+import com.ar.edu.unq.futmarket.controllers.request.SellRequest;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.services.OrderService;
 import lombok.RequiredArgsConstructor;

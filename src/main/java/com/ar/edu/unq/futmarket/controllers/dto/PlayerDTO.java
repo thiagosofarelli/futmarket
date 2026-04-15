@@ -1,8 +1,17 @@
 package com.ar.edu.unq.futmarket.controllers.dto;
 
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PlayerDTO {
     public Long id;
     public String name;
