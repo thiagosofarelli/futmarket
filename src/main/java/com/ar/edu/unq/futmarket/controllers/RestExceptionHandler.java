@@ -1,15 +1,14 @@
 package com.ar.edu.unq.futmarket.controllers;
 
-import com.ar.edu.unq.futmarket.exception.OrderNotFoundException;
-import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
-import com.ar.edu.unq.futmarket.exception.PortfolioNotFoundException;
-import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
+import com.ar.edu.unq.futmarket.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import java.time.LocalDateTime;
+
+import java.io.InvalidClassException;
 
 @ControllerAdvice
 public class RestExceptionHandler {
@@ -52,6 +51,26 @@ public class RestExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception ex) {
         return buildErrorResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InvalidClassException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentials(Exception ex) {
+        return buildErrorResponse(ex, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(SuperUserNotFoundException.class)
+    public ResponseEntity<ApiError> handleSuperUserNotFound(Exception ex) {
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleUsernameAlreadyExists(Exception ex) {
+        return buildErrorResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleMissingRequestBody(HttpMessageNotReadableException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<ApiError> buildErrorResponse(Exception ex, HttpStatus status) {
