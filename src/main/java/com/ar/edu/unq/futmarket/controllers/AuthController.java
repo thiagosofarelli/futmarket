@@ -1,8 +1,8 @@
 package com.ar.edu.unq.futmarket.controllers;
 
-import com.ar.edu.unq.futmarket.controllers.dto.AuthResponse;
-import com.ar.edu.unq.futmarket.controllers.dto.LoginRequest;
-import com.ar.edu.unq.futmarket.controllers.dto.RegisterRequest;
+import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
+import com.ar.edu.unq.futmarket.controllers.response.LoginRequest;
+import com.ar.edu.unq.futmarket.controllers.response.RegisterRequest;
 import com.ar.edu.unq.futmarket.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

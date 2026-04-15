@@ -1,7 +1,10 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
+@Getter
 public class ApiError {
     private LocalDateTime timestamp;
     private int status;
@@ -21,9 +24,4 @@ public class ApiError {
         this(status, error, message, null);
     }
 
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public int getStatus() { return status; }
-    public String getError() { return error; }
-    public String getMessage() { return message; }
-    public String getPath() { return path; }
 }

@@ -1,4 +1,4 @@
-package com.ar.edu.unq.futmarket.controllers.dto;
+package com.ar.edu.unq.futmarket.controllers.response;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

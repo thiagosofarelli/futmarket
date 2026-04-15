@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.SuperUserNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
@@ -65,9 +66,9 @@ class UserServiceTest {
     }
 
     @Test
-    void findSuperuser_noSuperuser_throwsUserNotFoundException() {
+    void findSuperuser_noSuperuser_throwsSuperUserNotFoundException() {
         userRepository.delete(superuser);
         assertThatThrownBy(() -> userService.findSuperuser())
-                .isInstanceOf(UserNotFoundException.class);
+                .isInstanceOf(SuperUserNotFoundException.class);
     }
 }

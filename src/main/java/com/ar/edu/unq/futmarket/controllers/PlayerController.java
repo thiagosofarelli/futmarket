@@ -1,15 +1,18 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.services.PlayerService;
 import com.ar.edu.unq.futmarket.services.QuoteService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/players")
@@ -18,23 +21,34 @@ public class PlayerController {
 
     private final PlayerService playerService;
     private final QuoteService quoteService;
+    private final ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<List<Player>> getPlayers(
+    public ResponseEntity<List<PlayerDTO>> getPlayers(
             @RequestParam(required = false) String league,
             @RequestParam(required = false) String team,
             @RequestParam(required = false) PlayerPosition position) {
-        return ResponseEntity.ok(playerService.findByFilters(league, team, position));
+        List<Player> players = playerService.findByFilters(league, team, position);
+        List<PlayerDTO> dtos = players.stream()
+                .map(player -> modelMapper.map(player, PlayerDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/ranking")
-    public ResponseEntity<List<Player>> getRanking() {
-        return ResponseEntity.ok(playerService.getRanking());
+    public ResponseEntity<List<PlayerDTO>> getRanking() {
+        List<Player> players = playerService.getRanking();
+        List<PlayerDTO> dtos = players.stream()
+                .map(player -> modelMapper.map(player, PlayerDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Player> getPlayer(@PathVariable Long id) {
-        return ResponseEntity.ok(playerService.findById(id));
+    public ResponseEntity<PlayerDTO> getPlayer(@PathVariable Long id) {
+        Player player = playerService.findById(id);
+        PlayerDTO dto = modelMapper.map(player, PlayerDTO.class);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/quotes")

@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
+import com.ar.edu.unq.futmarket.exception.SuperUserNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
@@ -24,6 +25,6 @@ public class UserService {
 
     public User findSuperuser() {
         return userRepository.findBySuperuserTrue()
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(SuperUserNotFoundException::new);
     }
 }
