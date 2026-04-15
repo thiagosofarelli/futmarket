@@ -1,13 +1,12 @@
 package com.ar.edu.unq.futmarket.services;
 
-import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
 import com.ar.edu.unq.futmarket.controllers.request.LoginRequest;
 import com.ar.edu.unq.futmarket.controllers.request.RegisterRequest;
-import com.ar.edu.unq.futmarket.exception.UserAlreadyExistsException;
+import com.ar.edu.unq.futmarket.exception.InvalidCredentialsException;
+import com.ar.edu.unq.futmarket.exception.UsernameAlreadyExistsException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -39,7 +38,7 @@ public class AuthService implements UserDetailsService {
     @Transactional
     public User register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException();
+            throw new UsernameAlreadyExistsException();
         }
         User user = new User(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -49,7 +48,7 @@ public class AuthService implements UserDetailsService {
     public User login(LoginRequest request) {
         UserDetails userDetails = loadUserByUsername(request.getUsername());
         if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
-            throw new BadCredentialsException("Invalid credentials.");
+            throw new InvalidCredentialsException();
         }
         return userService.findByUsername(request.getUsername());
     }
