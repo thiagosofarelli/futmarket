@@ -1,4 +1,4 @@
-package com.ar.edu.unq.futmarket.controllers.dto;
+package com.ar.edu.unq.futmarket.controllers.response;
 
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
 import lombok.Getter;

@@ -1,10 +1,12 @@
 package com.ar.edu.unq.futmarket.services;
 
-import com.ar.edu.unq.futmarket.controllers.dto.AuthResponse;
-import com.ar.edu.unq.futmarket.controllers.dto.LoginRequest;
-import com.ar.edu.unq.futmarket.controllers.dto.RegisterRequest;
+import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
+import com.ar.edu.unq.futmarket.controllers.response.LoginRequest;
+import com.ar.edu.unq.futmarket.controllers.response.RegisterRequest;
+import com.ar.edu.unq.futmarket.exception.UserAlreadyExistsException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,7 +39,7 @@ public class AuthService implements UserDetailsService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username already taken: " + request.getUsername());
+            throw new UserAlreadyExistsException();
         }
         User user = new User(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
