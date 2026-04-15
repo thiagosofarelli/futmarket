@@ -1,14 +1,12 @@
 package com.ar.edu.unq.futmarket.services;
 
-import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
-import com.ar.edu.unq.futmarket.controllers.response.LoginRequest;
-import com.ar.edu.unq.futmarket.controllers.response.RegisterRequest;
-import com.ar.edu.unq.futmarket.exception.UserAlreadyExistsException;
+import com.ar.edu.unq.futmarket.controllers.request.LoginRequest;
+import com.ar.edu.unq.futmarket.controllers.request.RegisterRequest;
+import com.ar.edu.unq.futmarket.exception.InvalidCredentialsException;
+import com.ar.edu.unq.futmarket.exception.UsernameAlreadyExistsException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
-import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,6 +21,7 @@ public class AuthService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -37,21 +36,20 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public User register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException();
+            throw new UsernameAlreadyExistsException();
         }
         User user = new User(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
-        return new AuthResponse(jwtService.generateToken(request.getUsername()));
+        return userRepository.save(user);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public User login(LoginRequest request) {
         UserDetails userDetails = loadUserByUsername(request.getUsername());
         if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
-            throw new BadCredentialsException("Invalid credentials.");
+            throw new InvalidCredentialsException();
         }
-        return new AuthResponse(jwtService.generateToken(request.getUsername()));
+        return userService.findByUsername(request.getUsername());
     }
 }
