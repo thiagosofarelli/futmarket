@@ -69,8 +69,8 @@ public class RestExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApiError> handleMissingRequestBody(HttpMessageNotReadableException ex) {
-        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ApiError> handleMissingRequestBody() {
+        return buildErrorResponse(new InvalidRequestBodyException(), HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<ApiError> buildErrorResponse(Exception ex, HttpStatus status) {
