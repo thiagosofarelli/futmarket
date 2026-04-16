@@ -8,13 +8,17 @@ import java.util.List;
 
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 
-    List<Player> findByLeague(String league);
+    List<Player> findPlayerByLeague(String league);
 
-    List<Player> findByTeam(String team);
+    List<Player> findPlayerByTeam(String team);
 
-    List<Player> findByPlayerPosition(PlayerPosition playerPosition);
+    List<Player> findPlayerByPlayerPosition(PlayerPosition playerPosition);
 
-    List<Player> findByLeagueAndTeam(String league, String team);
+    List<Player> findPlayerByLeagueAndTeam(String league, String team);
 
-    List<Player> findByLeagueAndPlayerPosition(String league, PlayerPosition playerPosition);
+    List<Player> findPlayerByLeagueAndPlayerPosition(String league, PlayerPosition playerPosition);
+
+    List<Player> findPlayerByLeagueAndTeamAndPlayerPosition(String league, String team, PlayerPosition position);
+
+    List<Player> findPlayerByTeamAndPlayerPosition(String team, PlayerPosition position);
 }

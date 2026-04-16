@@ -8,11 +8,13 @@ import com.ar.edu.unq.futmarket.repositories.QuoteRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +51,13 @@ public class QuoteService {
             quote.setScore(score);
             quoteRepository.save(quote);
         }
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * MON", zone = "America/Argentina/Buenos_Aires")
+    public void scheduleWeeklyRecalculation() {
+        ValuationStrategy strategy = ValuationStrategy.GENERAL_PERFORMANCE;
+        recalculateAll(strategy);
     }
 
     private double calculateScore(Player player, ValuationStrategy strategy) {

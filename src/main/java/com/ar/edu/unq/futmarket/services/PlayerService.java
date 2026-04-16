@@ -6,7 +6,6 @@ import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.Comparator;
 import java.util.List;
 
@@ -26,11 +25,13 @@ public class PlayerService {
     }
 
     public List<Player> findByFilters(String league, String team, PlayerPosition position) {
-        if (league != null && team != null) return playerRepository.findByLeagueAndTeam(league, team);
-        if (league != null && position != null) return playerRepository.findByLeagueAndPlayerPosition(league, position);
-        if (league != null) return playerRepository.findByLeague(league);
-        if (team != null) return playerRepository.findByTeam(team);
-        if (position != null) return playerRepository.findByPlayerPosition(position);
+        if (league != null && team != null && position != null) return playerRepository.findPlayerByLeagueAndTeamAndPlayerPosition(league, team, position);
+        if (league != null && position != null) return playerRepository.findPlayerByLeagueAndPlayerPosition(league, position);
+        if (league != null && team != null) return playerRepository.findPlayerByLeagueAndTeam(league, team);
+        if (team != null && position != null) return playerRepository.findPlayerByTeamAndPlayerPosition(team, position);
+        if (league != null) return playerRepository.findPlayerByLeague(league);
+        if (team != null) return playerRepository.findPlayerByTeam(team);
+        if (position != null) return playerRepository.findPlayerByPlayerPosition(position);
         return playerRepository.findAll();
     }
 
