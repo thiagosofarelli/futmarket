@@ -1,18 +1,26 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ar.edu.unq.futmarket.adapters.FootballDataClient;
 import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.services.PlayerService;
 import com.ar.edu.unq.futmarket.services.QuoteService;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/players")
@@ -21,6 +29,7 @@ public class PlayerController {
 
     private final PlayerService playerService;
     private final QuoteService quoteService;
+    private final FootballDataClient footballDataClient;
     private final ModelMapper modelMapper;
 
     @GetMapping
@@ -56,4 +65,11 @@ public class PlayerController {
         playerService.findById(id);
         return ResponseEntity.ok(quoteService.findByPlayerId(id));
     }
+
+    @PostMapping("/sync")
+    public ResponseEntity<Void> syncPlayers() {
+        footballDataClient.fetchAndSavePlayers();
+        return ResponseEntity.ok().build();
+    }
+
 }

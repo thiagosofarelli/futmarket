@@ -1,10 +1,12 @@
 package com.ar.edu.unq.futmarket.repositories;
 
-import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.ar.edu.unq.futmarket.model.Player;
+import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 
@@ -21,4 +23,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     List<Player> findPlayerByLeagueAndTeamAndPlayerPosition(String league, String team, PlayerPosition position);
 
     List<Player> findPlayerByTeamAndPlayerPosition(String team, PlayerPosition position);
+
+    Optional<Player> findByExternalId(Long externalId);
 }
