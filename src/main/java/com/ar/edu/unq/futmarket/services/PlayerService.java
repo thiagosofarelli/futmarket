@@ -25,13 +25,13 @@ public class PlayerService {
     }
 
     public List<Player> findByFilters(String league, String team, PlayerPosition position) {
-        if (league != null && team != null && position != null) return playerRepository.findPlayerByLeagueAndTeamAndPlayerPosition(league, team, position);
-        if (league != null && position != null) return playerRepository.findPlayerByLeagueAndPlayerPosition(league, position);
-        if (league != null && team != null) return playerRepository.findPlayerByLeagueAndTeam(league, team);
-        if (team != null && position != null) return playerRepository.findPlayerByTeamAndPlayerPosition(team, position);
-        if (league != null) return playerRepository.findPlayerByLeague(league);
-        if (team != null) return playerRepository.findPlayerByTeam(team);
-        if (position != null) return playerRepository.findPlayerByPlayerPosition(position);
+        if (league != null && team != null && position != null) return playerRepository.findPlayersByLeagueAndTeamAndPlayerPosition(league, team, position);
+        if (league != null && position != null) return playerRepository.findPlayersByLeagueAndPlayerPosition(league, position);
+        if (league != null && team != null) return playerRepository.findPlayersByLeagueAndTeam(league, team);
+        if (team != null && position != null) return playerRepository.findPlayersByTeamAndPlayerPosition(team, position);
+        if (league != null) return playerRepository.findPlayersByLeague(league);
+        if (team != null) return playerRepository.findPlayersByTeam(team);
+        if (position != null) return playerRepository.findPlayersByPlayerPosition(position);
         return playerRepository.findAll();
     }
 

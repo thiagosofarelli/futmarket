@@ -38,7 +38,7 @@ class PlayerRepositoryTest {
 
     @Test
     void findByLeague_returnsOnlyMatchingLeague() {
-        List<Player> result = playerRepository.findPlayerByLeague("MLS");
+        List<Player> result = playerRepository.findPlayersByLeague("MLS");
         assertThat(result).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ramos");
@@ -46,18 +46,18 @@ class PlayerRepositoryTest {
 
     @Test
     void findByLeague_unknownLeague_returnsEmpty() {
-        assertThat(playerRepository.findPlayerByLeague("Premier League")).isEmpty();
+        assertThat(playerRepository.findPlayersByLeague("Premier League")).isEmpty();
     }
 
     @Test
     void findByTeam_returnsOnlyMatchingTeam() {
-        List<Player> result = playerRepository.findPlayerByTeam("Inter Miami");
+        List<Player> result = playerRepository.findPlayersByTeam("Inter Miami");
         assertThat(result).hasSize(2);
     }
 
     @Test
     void findByPlayerPosition_returnsForwards() {
-        List<Player> forwards = playerRepository.findPlayerByPlayerPosition(PlayerPosition.FORWARD);
+        List<Player> forwards = playerRepository.findPlayersByPlayerPosition(PlayerPosition.FORWARD);
         assertThat(forwards).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ronaldo");
@@ -65,13 +65,13 @@ class PlayerRepositoryTest {
 
     @Test
     void findByLeagueAndTeam_narrowsDown() {
-        List<Player> result = playerRepository.findPlayerByLeagueAndTeam("MLS", "Inter Miami");
+        List<Player> result = playerRepository.findPlayersByLeagueAndTeam("MLS", "Inter Miami");
         assertThat(result).hasSize(2);
     }
 
     @Test
     void findByLeagueAndPlayerPosition_returnsDefendersInMLS() {
-        List<Player> result = playerRepository.findPlayerByLeagueAndPlayerPosition("MLS", PlayerPosition.DEFENDER);
+        List<Player> result = playerRepository.findPlayersByLeagueAndPlayerPosition("MLS", PlayerPosition.DEFENDER);
         assertThat(result).hasSize(1)
                 .extracting(Player::getName)
                 .containsExactly("Ramos");
