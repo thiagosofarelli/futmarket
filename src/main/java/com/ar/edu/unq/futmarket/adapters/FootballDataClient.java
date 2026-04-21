@@ -125,7 +125,7 @@ public class FootballDataClient {
         }
 
         PlayerPosition position = mapPosition(asString(playerData.get("position")));
-        Optional<Player> existingPlayer = playerRepository.findByExternalId(externalId);
+        Optional<Player> existingPlayer = playerRepository.findPlayerByExternalId(externalId);
 
         if (existingPlayer.isPresent()) {
             Player player = existingPlayer.get();

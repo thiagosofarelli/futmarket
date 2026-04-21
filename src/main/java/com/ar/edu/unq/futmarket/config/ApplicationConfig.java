@@ -23,9 +23,4 @@ public class ApplicationConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
-    @Bean
-    public UserDetailsService userDetailsService(AuthService authService) {
-        return authService;
-    }
 }
