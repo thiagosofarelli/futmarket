@@ -25,14 +25,21 @@ public class PlayerService {
     }
 
     public List<Player> findByFilters(String league, String team, PlayerPosition position) {
-        if (league != null && team != null && position != null) return playerRepository.findPlayersByLeagueAndTeamAndPlayerPosition(league, team, position);
-        if (league != null && position != null) return playerRepository.findPlayersByLeagueAndPlayerPosition(league, position);
-        if (league != null && team != null) return playerRepository.findPlayersByLeagueAndTeam(league, team);
-        if (team != null && position != null) return playerRepository.findPlayersByTeamAndPlayerPosition(team, position);
-        if (league != null) return playerRepository.findPlayersByLeague(league);
-        if (team != null) return playerRepository.findPlayersByTeam(team);
+        String normalizedLeague = normalize(league);
+        String normalizedTeam = normalize(team);
+
+        if (normalizedLeague != null && normalizedTeam != null && position != null) return playerRepository.findPlayersByLeagueAndTeamAndPlayerPosition(normalizedLeague, normalizedTeam, position);
+        if (normalizedLeague != null && position != null) return playerRepository.findPlayersByLeagueAndPlayerPosition(normalizedLeague, position);
+        if (normalizedLeague != null && normalizedTeam != null) return playerRepository.findPlayersByLeagueAndTeam(normalizedLeague, normalizedTeam);
+        if (normalizedTeam != null && position != null) return playerRepository.findPlayersByTeamAndPlayerPosition(normalizedTeam, position);
+        if (normalizedLeague != null) return playerRepository.findPlayersByLeague(normalizedLeague);
+        if (normalizedTeam != null) return playerRepository.findPlayersByTeam(normalizedTeam);
         if (position != null) return playerRepository.findPlayersByPlayerPosition(position);
         return playerRepository.findAll();
+    }
+
+    private String normalize(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     public List<Player> getRanking() {
