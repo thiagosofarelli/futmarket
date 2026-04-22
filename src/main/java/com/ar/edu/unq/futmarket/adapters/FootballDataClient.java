@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ar.edu.unq.futmarket.model.enums.League;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -42,7 +43,7 @@ public class FootballDataClient {
     private final String BASE_URL = "https://api.football-data.org/v4";
 
     @Scheduled(cron = "${futmarket.players.sync.cron:0 0 * * * *}")
-    public void fetchAndSavePlayers() {
+    public void syncPlayers() {
         if (apiKey == null || apiKey.isBlank()) {
             return;
         }
@@ -118,6 +119,7 @@ public class FootballDataClient {
     }
 
     private Player upsertPlayer(Map<String, Object> playerData, String teamName, String leagueCode) {
+        String leagueName = League.getFullNameByCode(leagueCode);
         Long externalId = asLong(playerData.get("id"));
         String playerName = asString(playerData.get("name"));
         if (externalId == null || playerName == null || teamName == null || leagueCode == null) {
@@ -131,12 +133,12 @@ public class FootballDataClient {
             Player player = existingPlayer.get();
             player.setName(playerName);
             player.setTeam(teamName);
-            player.setLeague(leagueCode);
+            player.setLeague(leagueName);
             player.setPlayerPosition(position);
             return playerRepository.save(player);
         }
 
-        Player player = new Player(playerName, teamName, leagueCode, position);
+        Player player = new Player(playerName, teamName, leagueName, position);
         player.setExternalId(externalId);
         player.setGoals(0);
         player.setAssists(0);
@@ -157,7 +159,6 @@ public class FootballDataClient {
         return switch (apiPosition.trim().toLowerCase()) {
             case "goalkeeper" -> PlayerPosition.GOALKEEPER;
             case "offence" -> PlayerPosition.FORWARD;
-            case "midfield" -> PlayerPosition.MIDFIELDER;
             case "defence" -> PlayerPosition.DEFENDER;
             default -> PlayerPosition.MIDFIELDER;
         };

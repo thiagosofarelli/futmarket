@@ -3,6 +3,7 @@ package com.ar.edu.unq.futmarket.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.ar.edu.unq.futmarket.model.enums.League;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ar.edu.unq.futmarket.adapters.FootballDataClient;
 import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Quote;
@@ -29,12 +29,11 @@ public class PlayerController {
 
     private final PlayerService playerService;
     private final QuoteService quoteService;
-    private final FootballDataClient footballDataClient;
     private final ModelMapper modelMapper;
 
     @GetMapping
     public ResponseEntity<List<PlayerDTO>> getPlayers(
-            @RequestParam(required = false) String league,
+            @RequestParam(required = false) League league,
             @RequestParam(required = false) String team,
             @RequestParam(required = false) PlayerPosition position) {
         List<Player> players = playerService.findByFilters(league, team, position);
@@ -68,8 +67,13 @@ public class PlayerController {
 
     @PostMapping("/sync")
     public ResponseEntity<Void> syncPlayers() {
-        footballDataClient.fetchAndSavePlayers();
+        playerService.syncPlayers();
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/stats/sync/{league}") // Send PL/BL1/FL1/PD/SA
+    public ResponseEntity<Void> syncStatsByLeague(@PathVariable League league) {
+        playerService.syncStatsByLeague(league);
+        return ResponseEntity.ok().build();
+    }
 }

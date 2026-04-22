@@ -2,6 +2,7 @@ package com.ar.edu.unq.futmarket.services;
 
 import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
 import com.ar.edu.unq.futmarket.model.Player;
+import com.ar.edu.unq.futmarket.model.enums.League;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,17 +27,17 @@ class PlayerServiceTest {
     @Autowired
     private PlayerRepository playerRepository;
 
-    private Player messi;
-    private Player ronaldo;
-    private Player ramos;
+    private Player haaland;
+    private Player lautaro;
+    private Player saliba;
     private Player courtois;
 
     @BeforeEach
     void setUp() {
-        messi    = save(player("Messi",    "Inter Miami", "MLS",          PlayerPosition.FORWARD,    "50.00"));
-        ronaldo  = save(player("Ronaldo",  "Al Nassr",    "Saudi League", PlayerPosition.FORWARD,    "40.00"));
-        ramos    = save(player("Ramos",    "Inter Miami", "MLS",          PlayerPosition.DEFENDER,   "30.00"));
-        courtois = save(player("Courtois", "Real Madrid", "La Liga",      PlayerPosition.GOALKEEPER, "20.00"));
+        haaland = save(player("Haaland", "Manchester City", League.PL, PlayerPosition.FORWARD, "50.00"));
+        lautaro = save(player("Lautaro", "Inter", League.SA, PlayerPosition.FORWARD, "40.00"));
+        saliba = save(player("Saliba", "Arsenal FC", League.PL, PlayerPosition.DEFENDER, "30.00"));
+        courtois = save(player("Courtois", "Real Madrid", League.PD, PlayerPosition.GOALKEEPER, "20.00"));
     }
 
     @Test
@@ -46,8 +47,8 @@ class PlayerServiceTest {
 
     @Test
     void findById_found_returnsPlayer() {
-        Player found = playerService.findById(messi.getId());
-        assertThat(found.getName()).isEqualTo("Messi");
+        Player found = playerService.findById(haaland.getId());
+        assertThat(found.getName()).isEqualTo("Haaland");
     }
 
     @Test
@@ -63,18 +64,18 @@ class PlayerServiceTest {
 
     @Test
     void findByFilters_byLeague_returnsMatchingPlayers() {
-        List<Player> result = playerService.findByFilters("MLS", null, null);
+        List<Player> result = playerService.findByFilters(League.PL, null, null);
         assertThat(result).hasSize(2)
                 .extracting(Player::getName)
-                .containsExactlyInAnyOrder("Messi", "Ramos");
+                .containsExactlyInAnyOrder("Haaland", "Saliba");
     }
 
     @Test
     void findByFilters_byTeam_returnsMatchingPlayers() {
-        List<Player> result = playerService.findByFilters(null, "Inter Miami", null);
-        assertThat(result).hasSize(2)
+        List<Player> result = playerService.findByFilters(null, "Inter", null);
+        assertThat(result).hasSize(1)
                 .extracting(Player::getName)
-                .containsExactlyInAnyOrder("Messi", "Ramos");
+                .containsExactly("Lautaro");
     }
 
     @Test
@@ -82,33 +83,35 @@ class PlayerServiceTest {
         List<Player> result = playerService.findByFilters(null, null, PlayerPosition.FORWARD);
         assertThat(result).hasSize(2)
                 .extracting(Player::getName)
-                .containsExactlyInAnyOrder("Messi", "Ronaldo");
+                .containsExactlyInAnyOrder("Haaland", "Lautaro");
     }
 
     @Test
     void findByFilters_byLeagueAndTeam_narrowsDown() {
-        List<Player> result = playerService.findByFilters("MLS", "Inter Miami", null);
-        assertThat(result).hasSize(2);
+        List<Player> result = playerService.findByFilters(League.PL, "Arsenal FC", null);
+        assertThat(result).hasSize(1)
+                .extracting(Player::getName)
+                .containsExactly("Saliba");
     }
 
     @Test
     void findByFilters_byLeagueAndPosition_narrowsDown() {
-        List<Player> result = playerService.findByFilters("MLS", null, PlayerPosition.DEFENDER);
+        List<Player> result = playerService.findByFilters(League.PL, null, PlayerPosition.DEFENDER);
         assertThat(result).hasSize(1)
                 .extracting(Player::getName)
-                .containsExactly("Ramos");
+                .containsExactly("Saliba");
     }
 
     @Test
     void findByFilters_unknownLeague_returnsEmpty() {
-        assertThat(playerService.findByFilters("Premier League", null, null)).isEmpty();
+        assertThat(playerService.findByFilters(League.BL1, null, null)).isEmpty();
     }
 
     @Test
     void getRanking_returnsSortedByCurrentTokenPriceDesc() {
         List<Player> ranking = playerService.getRanking();
         assertThat(ranking).extracting(Player::getName)
-                .containsExactly("Messi", "Ronaldo", "Ramos", "Courtois");
+                .containsExactly("Haaland", "Lautaro", "Saliba", "Courtois");
     }
 
     @Test
@@ -120,9 +123,9 @@ class PlayerServiceTest {
         assertThat(ranking.get(0).getName()).isEqualTo("Courtois");
     }
 
-    private Player player(String name, String team, String league,
+    private Player player(String name, String team, League league,
                           PlayerPosition position, String price) {
-        Player p = new Player(name, team, league, position);
+        Player p = new Player(name, team, league.getFullName(), position);
         p.setCurrentTokenPrice(new BigDecimal(price));
         return p;
     }
