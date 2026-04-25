@@ -73,6 +73,11 @@ public class RestExceptionHandler {
         return buildErrorResponse(new InvalidRequestBodyException(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(LeagueNotFoundException.class)
+    public ResponseEntity<ApiError> handleLeagueNotFound(LeagueNotFoundException ex) {
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
     private ResponseEntity<ApiError> buildErrorResponse(Exception ex, HttpStatus status) {
         ApiError error = new ApiError(
                 status.value(),
