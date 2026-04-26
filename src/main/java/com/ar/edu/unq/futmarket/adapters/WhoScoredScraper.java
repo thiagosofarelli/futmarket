@@ -87,7 +87,7 @@ public class WhoScoredScraper {
 
         if (playerLinks.isEmpty()) return;
 
-        String playerPageUrl = BASE_URL + playerLinks.get(0).getAttribute("href");
+        String playerPageUrl = playerLinks.get(0).getAttribute("href");
         driver.get(playerPageUrl);
 
         try {
@@ -100,18 +100,30 @@ public class WhoScoredScraper {
 
         WebElement firstRow;
         try {
-            firstRow = driver.findElement(
-                    By.cssSelector("#top-player-stats-summary-grid tbody tr:first-child"));
+            // Use first data row (league stats, not total row)
+            List<WebElement> rows = driver.findElements(
+                    By.cssSelector("#top-player-stats-summary-grid tbody tr"));
+            firstRow = rows.stream()
+                    .filter(row -> !row.getText().contains("Total"))
+                    .findFirst()
+                    .orElse(null);
+            if (firstRow == null) return;
         } catch (NoSuchElementException e) {
             log.debug("No data rows in stats table for player: {}", player.getName());
             return;
         }
 
-        player.setGoals(extractTdStat(firstRow, "goal"));
-        player.setAssists(extractTdStat(firstRow, "assistTotal"));
-        player.setShots(extractTdStat(firstRow, "shotsPerGame"));
-        player.setKeyPasses(extractTdStat(firstRow, "passSuccess"));
-        player.setRating(extractTdStat(firstRow, "rating"));
+        double goals = extractTdStat(firstRow, "goal");
+        double assists = extractTdStat(firstRow, "assistTotal");
+        double shots = extractTdStat(firstRow, "shotsPerGame");
+        double keyPasses = extractTdStat(firstRow, "passSuccess");
+        double rating = extractTdStat(firstRow, "rating");
+
+        player.setGoals(goals);
+        player.setAssists(assists);
+        player.setShots(shots);
+        player.setKeyPasses(keyPasses);
+        player.setRating(rating);
 
         playerRepository.save(player);
         log.info("Stats updated for player: {}", player.getName());
@@ -119,9 +131,8 @@ public class WhoScoredScraper {
 
     private double extractTdStat(WebElement row, String className) {
         try {
-            WebElement td = row.findElement(By.cssSelector("td." + className));
-            String text = td.getText().trim();
-            return parseDouble(text);
+            WebElement td = row.findElement(By.cssSelector("td[class*='" + className + "']"));
+            return parseDouble(td.getText().trim());
         } catch (NoSuchElementException e) {
             return 0.0;
         }
@@ -162,8 +173,11 @@ public class WhoScoredScraper {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-blink-features=AutomationControlled");
+        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--disable-gpu");
         options.addArguments("user-agent=" + USER_AGENT);
         options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
+        options.setExperimentalOption("useAutomationExtension", false);
         return new ChromeDriver(options);
     }
 }
