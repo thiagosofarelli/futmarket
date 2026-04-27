@@ -42,7 +42,6 @@ public class FootballDataClient {
     private final WhoScoredScraper whoScoredScraper;
     private final String BASE_URL = "https://api.football-data.org/v4";
 
-    @Scheduled(cron = "${futmarket.players.sync.cron:0 0 * * * *}")
     public void syncPlayers() {
         if (apiKey == null || apiKey.isBlank()) {
             return;
@@ -80,12 +79,6 @@ public class FootballDataClient {
                         if (player != null) {
                             batchPlayers.add(player);
                         }
-                    }
-
-                    // Trigger WhoScored sync async after each team
-                    if (!batchPlayers.isEmpty()) {
-                        whoScoredScraper.syncPlayerStatsAsync(batchPlayers);
-                        batchPlayers.clear();
                     }
                 }
             } catch (RestClientException ex) {

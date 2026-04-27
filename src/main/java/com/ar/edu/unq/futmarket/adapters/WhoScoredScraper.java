@@ -37,12 +37,6 @@ public class WhoScoredScraper {
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
             "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-    @Scheduled(cron = "${futmarket.players.stats.sync.cron:0 0 2 * * *}")
-    public void syncPlayerStats() {
-        if (!enabled) return;
-        syncPlayerStats(playerRepository.findAll());
-    }
-
     public void syncPlayerStats(Collection<Player> players) {
         if (!enabled) return;
 
@@ -63,11 +57,6 @@ public class WhoScoredScraper {
         } finally {
             driver.quit();
         }
-    }
-
-    @Async
-    public void syncPlayerStatsAsync(Collection<Player> players) {
-        syncPlayerStats(players);
     }
 
     private void scrapeAndUpdate(WebDriver driver, Player player) {
@@ -98,31 +87,30 @@ public class WhoScoredScraper {
             return;
         }
 
-        WebElement firstRow;
+        WebElement totalRow;
         try {
-            // Use first data row (league stats, not total row)
             List<WebElement> rows = driver.findElements(
                     By.cssSelector("#top-player-stats-summary-grid tbody tr"));
-            firstRow = rows.stream()
-                    .filter(row -> !row.getText().contains("Total"))
+
+            totalRow = rows.stream()
+                    .filter(row -> row.getText().contains("Total / Average"))
                     .findFirst()
                     .orElse(null);
-            if (firstRow == null) return;
+
+            if (totalRow == null) return;
+
         } catch (NoSuchElementException e) {
             log.debug("No data rows in stats table for player: {}", player.getName());
             return;
         }
 
-        double goals = extractTdStat(firstRow, "goal");
-        double assists = extractTdStat(firstRow, "assistTotal");
-        double shots = extractTdStat(firstRow, "shotsPerGame");
-        double keyPasses = extractTdStat(firstRow, "passSuccess");
-        double rating = extractTdStat(firstRow, "rating");
+
+        double goals = extractTdStatByIndex(totalRow, 3);      // Goles en columna 2
+        double assists = extractTdStatByIndex(totalRow, 4);    // Asistencias en columna 3
+        double rating = extractTdStatByIndex(totalRow, 11);    // Rating en columna 10
 
         player.setGoals(goals);
         player.setAssists(assists);
-        player.setShots(shots);
-        player.setKeyPasses(keyPasses);
         player.setRating(rating);
 
         playerRepository.save(player);
@@ -136,6 +124,18 @@ public class WhoScoredScraper {
         } catch (NoSuchElementException e) {
             return 0.0;
         }
+    }
+
+    private double extractTdStatByIndex(WebElement row, int index) {
+        try {
+            List<WebElement> tds = row.findElements(By.tagName("td"));
+            if (index < tds.size()) {
+                return parseDouble(tds.get(index).getText().trim());
+            }
+        } catch (Exception e) {
+            // log or ignore
+        }
+        return 0.0;
     }
 
     private void dismissCookieBanner(WebDriver driver) {
