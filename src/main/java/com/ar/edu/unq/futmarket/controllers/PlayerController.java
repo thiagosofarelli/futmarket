@@ -71,9 +71,9 @@ public class PlayerController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/stats/sync/{league}") // Send PL/BL1/FL1/PD/SA
-    public ResponseEntity<Void> syncStatsByLeague(@PathVariable League league) {
-        playerService.syncStatsByLeague(league);
+    @PostMapping("/sync/stats/{league}") // Send PL/BL1/FL1/PD/SA
+    public ResponseEntity<Void> syncPlayersStatsByLeague(@PathVariable League league) {
+        playerService.syncPlayersStatsByLeague(league);
         return ResponseEntity.ok().build();
     }
 }

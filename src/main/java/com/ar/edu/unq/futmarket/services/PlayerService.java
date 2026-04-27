@@ -53,7 +53,7 @@ public class PlayerService {
                 .toList();
     }
 
-    public void syncStatsByLeague(League league) {
+    public void syncPlayersStatsByLeague(League league) {
         whoScoredScraper.syncPlayerStats(playerRepository.findPlayersByLeague(league.getFullName()));
     }
 
