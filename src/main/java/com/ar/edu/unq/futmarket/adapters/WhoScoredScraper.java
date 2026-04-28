@@ -11,8 +11,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -35,7 +33,7 @@ public class WhoScoredScraper {
     private static final String BASE_URL = "https://www.whoscored.com";
     private static final String USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-            "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+                    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     public void syncPlayerStats(Collection<Player> players) {
         if (!enabled) return;
@@ -79,50 +77,77 @@ public class WhoScoredScraper {
         String playerPageUrl = playerLinks.get(0).getAttribute("href");
         driver.get(playerPageUrl);
 
+        // --- DEFENSIVE STATS ---
         try {
-            wait.until(ExpectedConditions.presenceOfElementLocated(
-                    By.id("top-player-stats-summary-grid")));
-        } catch (TimeoutException e) {
-            log.debug("Stats table not found for player: {}", player.getName());
-            return;
+            clickTab(driver, wait, "Defensive");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("statistics-table-defensive")));
+            WebElement defRow = getAverageRow(driver, "#statistics-table-defensive");
+
+            if (defRow != null) {
+
+                double tackles = extractTdStatByIndex(defRow, 3);
+                double interceptions = extractTdStatByIndex(defRow, 4);
+
+                player.setTackles(tackles);
+                player.setInterceptions(interceptions);
+            }
+        } catch (Exception e) {
+            log.debug("Defensive stats not found for player: {}", player.getName());
         }
 
-        WebElement totalRow;
+        // --- OFFENSIVE STATS ---
         try {
-            List<WebElement> rows = driver.findElements(
-                    By.cssSelector("#top-player-stats-summary-grid tbody tr"));
+            clickTab(driver, wait, "Offensive");
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("statistics-table-offensive")));
+            WebElement offRow = getAverageRow(driver, "#statistics-table-offensive");
 
-            totalRow = rows.stream()
-                    .filter(row -> row.getText().contains("Total / Average"))
-                    .findFirst()
-                    .orElse(null);
+            if (offRow != null) {
 
-            if (totalRow == null) return;
+                double goals = extractTdStatByIndex(offRow, 3);
+                double assists = extractTdStatByIndex(offRow, 4);
+                double shots = extractTdStatByIndex(offRow, 5);
+                double keyPasses = extractTdStatByIndex(offRow, 6);
+                double dribblings = extractTdStatByIndex(offRow, 7);
+                double rating = extractTdStatByIndex(offRow, 12);
 
-        } catch (NoSuchElementException e) {
-            log.debug("No data rows in stats table for player: {}", player.getName());
-            return;
+                player.setGoals(goals);
+                player.setAssists(assists);
+                player.setShots(shots);
+                player.setKeyPasses(keyPasses);
+                player.setDribbles(dribblings);
+                player.setRating(rating);
+
+            }
+        } catch (Exception e) {
+            log.debug("Offensive stats not found for player: {}", player.getName());
         }
-
-
-        double goals = extractTdStatByIndex(totalRow, 3);      // Goles en columna 2
-        double assists = extractTdStatByIndex(totalRow, 4);    // Asistencias en columna 3
-        double rating = extractTdStatByIndex(totalRow, 11);    // Rating en columna 10
-
-        player.setGoals(goals);
-        player.setAssists(assists);
-        player.setRating(rating);
 
         playerRepository.save(player);
         log.info("Stats updated for player: {}", player.getName());
     }
 
-    private double extractTdStat(WebElement row, String className) {
+    private void clickTab(WebDriver driver, WebDriverWait wait, String tabName) {
+        WebElement tab = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//a[contains(text(), '" + tabName + "')]")));
         try {
-            WebElement td = row.findElement(By.cssSelector("td[class*='" + className + "']"));
-            return parseDouble(td.getText().trim());
+            tab.click();
+        } catch (ElementClickInterceptedException e) {
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            js.executeScript("arguments[0].click();", tab);
+        }
+    }
+
+    private WebElement getAverageRow(WebDriver driver, String containerSelector) {
+        try {
+            List<WebElement> rows = driver.findElements(
+                    By.cssSelector(containerSelector + " #top-player-stats-summary-grid tbody tr"));
+
+            return rows.stream()
+                    .filter(row -> row.getText().contains("Total / Average"))
+                    .findFirst()
+                    .orElse(null);
         } catch (NoSuchElementException e) {
-            return 0.0;
+            return null;
         }
     }
 
@@ -139,13 +164,28 @@ public class WhoScoredScraper {
     }
 
     private void dismissCookieBanner(WebDriver driver) {
-        driver.get(BASE_URL);
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
             WebElement acceptBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.cssSelector("button#accept-button, button[id*='accept'], button[class*='accept']")));
-            acceptBtn.click();
-        } catch (TimeoutException ignored) {
+                    By.xpath("//button[normalize-space()='Aceptar todo']")
+            ));
+
+            try {
+                acceptBtn.click();
+                log.info("Banner de cookies cerrado (Clic normal).");
+            } catch (ElementClickInterceptedException e) {
+                JavascriptExecutor js = (JavascriptExecutor) driver;
+                js.executeScript("arguments[0].click();", acceptBtn);
+                log.info("Banner de cookies cerrado (Javascript).");
+            }
+
+            Thread.sleep(1000);
+
+        } catch (TimeoutException e) {
+            log.debug("No apareció el banner de cookies o ya estaba aceptado.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -169,7 +209,7 @@ public class WhoScoredScraper {
     private WebDriver createDriver() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
+        // options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-blink-features=AutomationControlled");
