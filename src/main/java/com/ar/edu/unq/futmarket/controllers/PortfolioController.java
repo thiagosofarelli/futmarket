@@ -2,7 +2,7 @@ package com.ar.edu.unq.futmarket.controllers;
 
 import com.ar.edu.unq.futmarket.controllers.dto.PortfolioDTO;
 import com.ar.edu.unq.futmarket.model.Portfolio;
-import com.ar.edu.unq.futmarket.services.PortfolioService;
+import com.ar.edu.unq.futmarket.services.impl.PortfolioServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class PortfolioController {
 
-    private final PortfolioService portfolioService;
+    private final PortfolioServiceImpl portfolioService;
     private final ModelMapper modelMapper;
 
     @GetMapping("/user/{userId}")

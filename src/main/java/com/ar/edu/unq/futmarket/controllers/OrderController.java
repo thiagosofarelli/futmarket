@@ -4,7 +4,7 @@ import com.ar.edu.unq.futmarket.controllers.dto.OrderDTO;
 import com.ar.edu.unq.futmarket.controllers.request.BuyRequest;
 import com.ar.edu.unq.futmarket.controllers.request.SellRequest;
 import com.ar.edu.unq.futmarket.model.Order;
-import com.ar.edu.unq.futmarket.services.OrderService;
+import com.ar.edu.unq.futmarket.services.impl.OrderServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderService orderService;
+    private final OrderServiceImpl orderService;
     private final ModelMapper modelMapper;
 
     @PostMapping("/buy")

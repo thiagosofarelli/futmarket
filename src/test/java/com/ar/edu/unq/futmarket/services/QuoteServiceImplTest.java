@@ -5,6 +5,7 @@ import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
+import com.ar.edu.unq.futmarket.services.impl.QuoteServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,10 +18,10 @@ import static org.assertj.core.api.Assertions.within;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
-class QuoteServiceTest {
+class QuoteServiceImplTest {
 
     @Autowired
-    private QuoteService quoteService;
+    private QuoteServiceImpl quoteService;
 
     @Autowired
     private PlayerRepository playerRepository;

@@ -4,6 +4,7 @@ import com.ar.edu.unq.futmarket.exception.SuperUserNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
+import com.ar.edu.unq.futmarket.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
-class UserServiceTest {
+class UserServiceImplTest {
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Autowired
     private UserRepository userRepository;

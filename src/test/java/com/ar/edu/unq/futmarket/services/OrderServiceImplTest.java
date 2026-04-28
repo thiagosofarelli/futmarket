@@ -10,6 +10,7 @@ import com.ar.edu.unq.futmarket.model.enums.OrderType;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.repositories.UserRepository;
+import com.ar.edu.unq.futmarket.services.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
-class OrderServiceTest {
+class OrderServiceImplTest {
 
     @Autowired
-    private OrderService orderService;
+    private OrderServiceImpl orderService;
 
     @Autowired
     private UserRepository userRepository;
