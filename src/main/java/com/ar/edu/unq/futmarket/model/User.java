@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
 
     @Id
@@ -31,7 +30,6 @@ public class User {
     private Portfolio portfolio;
 
     @Column(nullable = false)
-    @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 
     @Column(nullable = false)
@@ -44,6 +42,7 @@ public class User {
         this(username, BigDecimal.ZERO, false);
     }
 
+    @Builder
     public User(String username, BigDecimal balance, boolean superuser) {
         validateUsername(username);
         validateNonNegativeBalance(balance);

@@ -21,7 +21,6 @@ class PortfolioTest {
                 .username("leandro")
                 .balance(new BigDecimal("1000.00"))
                 .superuser(false)
-                .portfolio(Portfolio.builder().build())
                 .build();
         portfolio = user.getPortfolio();
         player = Player.builder()

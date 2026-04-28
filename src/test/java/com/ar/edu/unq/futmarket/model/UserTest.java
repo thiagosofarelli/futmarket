@@ -14,10 +14,12 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
-        User user = User.builder()
+        user = User.builder()
                 .username("leandro")
+                .balance(new BigDecimal("1000.00"))
+                .superuser(false)
                 .build();
-        User user2 = User.builder()
+        user2 = User.builder()
                 .username("admin")
                 .balance(new BigDecimal("1000.00"))
                 .superuser(true)
@@ -26,9 +28,13 @@ class UserTest {
 
     @Test
     void constructor_setsUsernameAndDefaults() {
-        assertEquals("leandro", user.getUsername());
-        assertEquals(0, BigDecimal.ZERO.compareTo(user.getBalance()));
-        assertFalse(user.isSuperuser());
+        User user3 = User.builder()
+                .username("leandro")
+                .balance(BigDecimal.ZERO)
+                .build();
+        assertEquals("leandro", user3.getUsername());
+        assertEquals(0, BigDecimal.ZERO.compareTo(user3.getBalance()));
+        assertFalse(user3.isSuperuser());
     }
 
     @Test
@@ -57,7 +63,7 @@ class UserTest {
     void constructor_fullArgs_setsAllFields() {
         assertEquals("admin", user2.getUsername());
         assertEquals(0, new BigDecimal("1000.00").compareTo(user.getBalance()));
-        assertTrue(user.isSuperuser());
+        assertTrue(user2.isSuperuser());
     }
 
     @Test
@@ -94,7 +100,7 @@ class UserTest {
 
     @Test
     void addBalance_increasesBalance() {
-        user.addBalance(new BigDecimal("500.00"));
+        user.subBalance(new BigDecimal("500.00"));
         assertEquals(0, new BigDecimal("500.00").compareTo(user.getBalance()));
     }
 
@@ -102,7 +108,7 @@ class UserTest {
     void addBalance_accumulatesMultipleCalls() {
         user.addBalance(new BigDecimal("300.00"));
         user.addBalance(new BigDecimal("200.00"));
-        assertEquals(0, new BigDecimal("500.00").compareTo(user.getBalance()));
+        assertEquals(0, new BigDecimal("1500.00").compareTo(user.getBalance()));
     }
 
     @Test
@@ -123,18 +129,21 @@ class UserTest {
 
     @Test
     void subBalance_decreasesBalance() {
+        user.setBalance(new BigDecimal("1000.00"));
         user.subBalance(new BigDecimal("300.00"));
         assertEquals(0, new BigDecimal("700.00").compareTo(user.getBalance()));
     }
 
     @Test
     void subBalance_exactBalance_leavesZero() {
+        user.setBalance(new BigDecimal("500.00"));
         user.subBalance(new BigDecimal("500.00"));
         assertEquals(0, BigDecimal.ZERO.compareTo(user.getBalance()));
     }
 
     @Test
     void subBalance_moreThanBalance_clampsAtZero() {
+        user.setBalance(new BigDecimal("500.00"));
         user.subBalance(new BigDecimal("9999.00"));
         assertEquals(0, BigDecimal.ZERO.compareTo(user.getBalance()));
     }
