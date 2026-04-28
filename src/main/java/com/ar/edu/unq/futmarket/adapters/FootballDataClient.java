@@ -11,7 +11,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -29,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FootballDataClient {
 
     private static final long ONE_MINUTE_MILLIS = Duration.ofMinutes(1).toMillis();
-    private static final int BATCH_SIZE = 1; // Sync WhoScored after each team processed
 
     @Value("${FOOTBALL_DATA_API_KEY:}")
     private String apiKey;
@@ -39,7 +37,6 @@ public class FootballDataClient {
 
     private final PlayerRepository playerRepository;
     private final RestTemplate restTemplate;
-    private final WhoScoredScraper whoScoredScraper;
     private final String BASE_URL = "https://api.football-data.org/v4";
 
     public void syncPlayers() {
@@ -156,9 +153,6 @@ public class FootballDataClient {
 
             case "defence", "centre-back", "left-back", "right-back" ->
                     PlayerPosition.DEFENDER;
-
-            case "midfield", "defensive midfield", "central midfield", "attacking midfield", "right midfield" ->
-                    PlayerPosition.MIDFIELDER;
 
             case "offence", "centre-forward", "left winger", "right winger" ->
                     PlayerPosition.FORWARD;
