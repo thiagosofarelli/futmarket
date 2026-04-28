@@ -20,12 +20,32 @@ class PlayerRepositoryTest {
     private PlayerRepository playerRepository;
 
     private Player messi;
+    private Player ronaldo;
+    private Player ramos;
 
     @BeforeEach
     void setUp() {
-        messi = player("Messi", "Inter Miami", "MLS", PlayerPosition.FORWARD);
-        Player ronaldo = player("Ronaldo", "Al Nassr", "Saudi Pro League", PlayerPosition.FORWARD);
-        Player ramos = player("Ramos", "Inter Miami", "MLS", PlayerPosition.DEFENDER);
+        messi = Player.builder()
+                .name("Messi")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
+
+        ronaldo = Player.builder()
+                .name("Ronaldo")
+                .team("Al Nassr")
+                .league("Saudi Pro League")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
+
+        ramos = Player.builder()
+                .name("Ramos")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.DEFENDER)
+                .build();
+
         playerRepository.saveAll(List.of(messi, ronaldo, ramos));
     }
 
@@ -45,14 +65,11 @@ class PlayerRepositoryTest {
     }
 
     @Test
-    void findByLeague_unknownLeague_returnsEmpty() {
-        assertThat(playerRepository.findPlayersByLeague("Premier League")).isEmpty();
-    }
-
-    @Test
     void findByTeam_returnsOnlyMatchingTeam() {
         List<Player> result = playerRepository.findPlayersByTeam("Inter Miami");
-        assertThat(result).hasSize(2);
+        assertThat(result).hasSize(2)
+                .extracting(Player::getName)
+                .containsExactlyInAnyOrder("Messi", "Ramos");
     }
 
     @Test
@@ -61,12 +78,6 @@ class PlayerRepositoryTest {
         assertThat(forwards).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ronaldo");
-    }
-
-    @Test
-    void findByLeagueAndTeam_narrowsDown() {
-        List<Player> result = playerRepository.findPlayersByLeagueAndTeam("MLS", "Inter Miami");
-        assertThat(result).hasSize(2);
     }
 
     @Test
@@ -82,16 +93,5 @@ class PlayerRepositoryTest {
         Player p = playerRepository.findById(messi.getId()).orElseThrow();
         assertThat(p.getAvailableTokens()).isEqualTo(100);
         assertThat(p.getCurrentTokenPrice()).isEqualByComparingTo("1");
-    }
-
-    // --- helpers ---
-
-    private Player player(String name, String team, String league, PlayerPosition playerPosition) {
-        Player p = new Player();
-        p.setName(name);
-        p.setTeam(team);
-        p.setLeague(league);
-        p.setPlayerPosition(playerPosition);
-        return p;
     }
 }

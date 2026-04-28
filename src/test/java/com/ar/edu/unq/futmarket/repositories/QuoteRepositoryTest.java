@@ -26,21 +26,29 @@ class QuoteRepositoryTest {
     @Autowired
     private PlayerRepository playerRepository;
 
-    private Player player;
+    private Player messi;
 
     @BeforeEach
     void setUp() {
-        player = new Player();
-        player.setName("Messi");
-        player.setTeam("Inter Miami");
-        player.setLeague("MLS");
-        player.setPlayerPosition(PlayerPosition.FORWARD);
-        playerRepository.save(player);
+        messi = Player.builder()
+                .name("Messi")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
+
+        messi = playerRepository.save(messi);
     }
 
     @Test
     void save_persistsQuote() {
-        Quote quote = quote(player, new BigDecimal("3.5000"), ValuationStrategy.GENERAL_PERFORMANCE, 3.5);
+        Quote quote = Quote.builder()
+                .player(messi)
+                .currentTokenPrice(new BigDecimal("3.5000"))
+                .strategy(ValuationStrategy.GENERAL_PERFORMANCE)
+                .score(3.5)
+                .build();
+
         Quote saved = quoteRepository.save(quote);
 
         assertThat(saved.getId()).isNotNull();
@@ -49,15 +57,25 @@ class QuoteRepositoryTest {
 
     @Test
     void findByPlayer_returnsQuotesOrderedByDateDesc() {
-        Quote older = quote(player, new BigDecimal("2.0000"), ValuationStrategy.GENERAL_PERFORMANCE, 2.0);
-        older.setCalculatedAt(LocalDateTime.now().minusDays(2));
+        Quote older = Quote.builder()
+                .player(messi)
+                .currentTokenPrice(new BigDecimal("2.0000"))
+                .strategy(ValuationStrategy.GENERAL_PERFORMANCE)
+                .score(2.0)
+                .calculatedAt(LocalDateTime.now().minusDays(2))
+                .build();
 
-        Quote newer = quote(player, new BigDecimal("4.0000"), ValuationStrategy.POSITION_WEIGHTED, 4.0);
-        newer.setCalculatedAt(LocalDateTime.now().minusDays(1));
+        Quote newer = Quote.builder()
+                .player(messi)
+                .currentTokenPrice(new BigDecimal("4.0000"))
+                .strategy(ValuationStrategy.POSITION_WEIGHTED)
+                .score(4.0)
+                .calculatedAt(LocalDateTime.now().minusDays(1))
+                .build();
 
         quoteRepository.saveAll(List.of(older, newer));
 
-        List<Quote> result = quoteRepository.findByPlayerOrderByCalculatedAtDesc(player);
+        List<Quote> result = quoteRepository.findByPlayerOrderByCalculatedAtDesc(messi);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getCurrentTokenPrice()).isEqualByComparingTo("4.0000");
@@ -66,15 +84,25 @@ class QuoteRepositoryTest {
 
     @Test
     void findByPlayerId_returnsQuotesOrderedByDateDesc() {
-        Quote q1 = quote(player, new BigDecimal("1.5000"), ValuationStrategy.GENERAL_PERFORMANCE, 1.5);
-        q1.setCalculatedAt(LocalDateTime.now().minusHours(5));
+        Quote q1 = Quote.builder()
+                .player(messi)
+                .currentTokenPrice(new BigDecimal("1.5000"))
+                .strategy(ValuationStrategy.GENERAL_PERFORMANCE)
+                .score(1.5)
+                .calculatedAt(LocalDateTime.now().minusHours(5))
+                .build();
 
-        Quote q2 = quote(player, new BigDecimal("2.5000"), ValuationStrategy.POSITION_WEIGHTED, 2.5);
-        q2.setCalculatedAt(LocalDateTime.now());
+        Quote q2 = Quote.builder()
+                .player(messi)
+                .currentTokenPrice(new BigDecimal("2.5000"))
+                .strategy(ValuationStrategy.POSITION_WEIGHTED)
+                .score(2.5)
+                .calculatedAt(LocalDateTime.now())
+                .build();
 
         quoteRepository.saveAll(List.of(q1, q2));
 
-        List<Quote> result = quoteRepository.findByPlayerIdOrderByCalculatedAtDesc(player.getId());
+        List<Quote> result = quoteRepository.findByPlayerIdOrderByCalculatedAtDesc(messi.getId());
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getCurrentTokenPrice()).isEqualByComparingTo("2.5000");
@@ -82,28 +110,23 @@ class QuoteRepositoryTest {
 
     @Test
     void findByPlayer_noQuotes_returnsEmpty() {
-        assertThat(quoteRepository.findByPlayerOrderByCalculatedAtDesc(player)).isEmpty();
+        assertThat(quoteRepository.findByPlayerOrderByCalculatedAtDesc(messi)).isEmpty();
     }
 
     @Test
     void quote_recordsStrategyVersion() {
-        Quote q = quote(player, new BigDecimal("5.0000"), ValuationStrategy.POSITION_WEIGHTED, 5.0);
-        quoteRepository.save(q);
+        Quote q = Quote.builder()
+                .player(messi)
+                .currentTokenPrice(new BigDecimal("5.0000"))
+                .strategy(ValuationStrategy.POSITION_WEIGHTED)
+                .score(5.0)
+                .build();
 
-        Quote found = quoteRepository.findById(q.getId()).orElseThrow();
+        Quote saved = quoteRepository.save(q);
+
+        Quote found = quoteRepository.findById(saved.getId()).orElseThrow();
         assertThat(found.getStrategy()).isEqualTo(ValuationStrategy.POSITION_WEIGHTED);
         assertThat(found.getScore()).isEqualTo(5.0);
-    }
-
-    // --- helpers ---
-
-    private Quote quote(Player player, BigDecimal value, ValuationStrategy strategy, double score) {
-        Quote q = new Quote();
-        q.setPlayer(player);
-        q.setCurrentTokenPrice(value);
-        q.setStrategy(strategy);
-        q.setScore(score);
-        return q;
     }
 }
 

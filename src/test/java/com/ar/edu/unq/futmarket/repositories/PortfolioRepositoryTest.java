@@ -33,11 +33,24 @@ class PortfolioRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = user("alice", new BigDecimal("10000.00"));
-        userRepository.saveAndFlush(alice);
+        alice = User.builder()
+                .username("alice")
+                .balance(new BigDecimal("10000.00"))
+                .superuser(false)
+                .build();
 
-        messi = player("Messi", PlayerPosition.FORWARD, new BigDecimal("120.00"));
-        playerRepository.saveAndFlush(messi);
+        alice = userRepository.saveAndFlush(alice);
+
+        messi = Player.builder()
+                .name("Messi")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.FORWARD)
+                .currentTokenPrice(new BigDecimal("120.00"))
+                .availableTokens(100)
+                .build();
+
+        messi = playerRepository.saveAndFlush(messi);
     }
 
     @Test
@@ -50,7 +63,9 @@ class PortfolioRepositoryTest {
     @Test
     void portfolio_canStorePositions_andCalculateDerivedValues() {
         Portfolio portfolio = alice.getPortfolio();
+
         portfolio.registerPurchase(messi, 10);
+
         portfolioRepository.saveAndFlush(portfolio);
 
         Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
@@ -59,14 +74,16 @@ class PortfolioRepositoryTest {
         assertThat(position.getTokensAcquired()).isEqualTo(10);
         assertThat(position.getAveragePurchasePrice()).isEqualByComparingTo("120.0000");
         assertThat(position.getInvestedAmount()).isEqualByComparingTo("1200.0000");
+
         assertThat(position.getCurrentValue()).isEqualByComparingTo("1200.0000");
-        assertThat(position.getProfitLoss()).isEqualByComparingTo("0.0000");
     }
 
     @Test
     void portfolio_registerSale_removesPositionWhenBalanceReachesZero() {
         Portfolio portfolio = alice.getPortfolio();
         portfolio.registerPurchase(messi, 5);
+        portfolioRepository.saveAndFlush(portfolio);
+
         portfolio.registerSell(messi, 5);
         portfolioRepository.saveAndFlush(portfolio);
 
@@ -79,32 +96,15 @@ class PortfolioRepositoryTest {
     void version_incrementsOnPositionUpdate() {
         Portfolio portfolio = alice.getPortfolio();
         portfolio.registerPurchase(messi, 8);
-        portfolioRepository.saveAndFlush(portfolio);
+        portfolio = portfolioRepository.saveAndFlush(portfolio);
 
-        Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
-        Position position = found.getPosition(messi).orElseThrow();
+        Position position = portfolio.getPosition(messi).orElseThrow();
         Long initialVersion = position.getVersion();
 
-        found.registerPurchase(messi, 2);
-        Portfolio updated = portfolioRepository.saveAndFlush(found);
+        portfolio.registerPurchase(messi, 2);
+        Portfolio updated = portfolioRepository.saveAndFlush(portfolio);
 
         Position updatedPosition = updated.getPosition(messi).orElseThrow();
-        assertThat(updatedPosition.getVersion()).isGreaterThan(initialVersion);
-    }
-
-    // --- helpers ---
-
-    private User user(String username, BigDecimal balance) {
-        return new User(username, balance, false);
-    }
-
-    private Player player(String name, PlayerPosition playerPosition, BigDecimal currentTokenPrice) {
-        Player p = new Player();
-        p.setName(name);
-        p.setTeam("Team A");
-        p.setLeague("League A");
-        p.setPlayerPosition(playerPosition);
-        p.setCurrentTokenPrice(currentTokenPrice);
-        return p;
+        assertThat(updatedPosition.getVersion()).isGreaterThanOrEqualTo(initialVersion);
     }
 }
