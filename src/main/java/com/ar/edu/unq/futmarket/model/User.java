@@ -2,9 +2,7 @@ package com.ar.edu.unq.futmarket.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -13,6 +11,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -43,6 +42,7 @@ public class User {
         this(username, BigDecimal.ZERO, false);
     }
 
+    @Builder
     public User(String username, BigDecimal balance, boolean superuser) {
         validateUsername(username);
         validateNonNegativeBalance(balance);

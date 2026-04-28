@@ -35,10 +35,34 @@ class PlayerServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        haaland = save(player("Haaland", "Manchester City", League.PL, PlayerPosition.FORWARD, "50.00"));
-        lautaro = save(player("Lautaro", "Inter", League.SA, PlayerPosition.FORWARD, "40.00"));
-        saliba = save(player("Saliba", "Arsenal FC", League.PL, PlayerPosition.DEFENDER, "30.00"));
-        courtois = save(player("Courtois", "Real Madrid", League.PD, PlayerPosition.GOALKEEPER, "20.00"));
+        haaland = save(Player.builder()
+                .name("Haaland")
+                .team("Manchester City")
+                .league(League.PL.getFullName())
+                .playerPosition(PlayerPosition.FORWARD)
+                .currentTokenPrice(new BigDecimal("50.00"))
+                .build());
+        lautaro = save(Player.builder()
+                .name("Lautaro")
+                .team("Inter")
+                .league(League.SA.getFullName())
+                .playerPosition(PlayerPosition.FORWARD)
+                .currentTokenPrice(new BigDecimal("40.00"))
+                .build());
+        saliba = save(Player.builder()
+                .name("Saliba")
+                .team("Arsenal FC")
+                .league(League.PL.getFullName())
+                .playerPosition(PlayerPosition.DEFENDER)
+                .currentTokenPrice(new BigDecimal("30.00"))
+                .build());
+        courtois = save(Player.builder()
+                .name("Courtois")
+                .team("Real Madrid")
+                .league(League.PD.getFullName())
+                .playerPosition(PlayerPosition.GOALKEEPER)
+                .currentTokenPrice(new BigDecimal("20.00"))
+                .build());
     }
 
     @Test

@@ -1,13 +1,8 @@
 package com.ar.edu.unq.futmarket.model;
-
-
-
 import com.ar.edu.unq.futmarket.model.enums.OrderStatus;
 import com.ar.edu.unq.futmarket.model.enums.OrderType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,6 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Order {
 
     @Id
@@ -41,6 +38,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 
     @Column(nullable = false)
