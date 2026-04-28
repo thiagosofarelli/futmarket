@@ -30,7 +30,12 @@ class PortfolioServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        alice = userRepository.save(new User("alice", new BigDecimal("500.00"), false));
+
+        alice = userRepository.save(User.builder()
+                .username("alice")
+                .balance(new BigDecimal("500.00"))
+                .superuser(false)
+                .build());
     }
 
     @Test

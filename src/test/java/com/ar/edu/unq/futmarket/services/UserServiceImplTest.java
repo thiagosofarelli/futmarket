@@ -31,8 +31,16 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        alice     = userRepository.save(new User("alice", new BigDecimal("500.00"), false));
-        superuser = userRepository.save(new User("SUPERUSER", BigDecimal.ZERO, true));
+        alice = userRepository.save(User.builder()
+                .username("alice")
+                .balance(new BigDecimal("500.00"))
+                .superuser(false)
+                .build());
+        superuser = userRepository.save(User.builder()
+                .username("SUPERUSER")
+                .balance(BigDecimal.ZERO)
+                .superuser(true)
+                .build());
     }
 
     @Test

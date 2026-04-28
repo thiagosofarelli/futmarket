@@ -2,10 +2,12 @@ package com.ar.edu.unq.futmarket.services;
 
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Quote;
+import com.ar.edu.unq.futmarket.model.enums.League;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.services.impl.QuoteServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,21 +28,29 @@ class QuoteServiceImplTest {
     @Autowired
     private PlayerRepository playerRepository;
 
+    Player salah;
+    Player martinelli;
+
+    @BeforeEach
+    void setUp() {
+        salah = playerRepository.save(Player.builder().name("Salah").team("Liverpool").playerPosition(PlayerPosition.FORWARD)
+                .goals(10).assists(3).shots(5).keyPasses(1).dribbles(4).tackles(2).interceptions(0).rating(8.0).league(League.PL.getFullName()).build());
+
+        martinelli = playerRepository.save(Player.builder().name("Martinelli").team("Liverpool").playerPosition(PlayerPosition.FORWARD)
+                .goals(10).assists(7).shots(9).keyPasses(1).dribbles(4).tackles(2).interceptions(0).rating(8.0).league(League.PL.getFullName()).build());
+    }
+
     @Test
     void findByPlayerId_noQuotes_returnsEmpty() {
-        Player p = playerRepository.save(player("Messi", PlayerPosition.FORWARD));
-        assertThat(quoteService.findByPlayerId(p.getId())).isEmpty();
+        assertThat(quoteService.findByPlayerId(salah.getId())).isEmpty();
     }
 
     @Test
     void findByPlayerId_afterRecalculation_returnsQuotesDescending() {
-        Player p = playerRepository.save(playerWithStats("Messi", PlayerPosition.FORWARD,
-                10, 3, 5, 1, 4, 2, 0, 8.0));
-
         quoteService.recalculateAll(ValuationStrategy.GENERAL_PERFORMANCE);
         quoteService.recalculateAll(ValuationStrategy.GENERAL_PERFORMANCE);
 
-        List<Quote> history = quoteService.findByPlayerId(p.getId());
+        List<Quote> history = quoteService.findByPlayerId(salah.getId());
         assertThat(history).hasSize(2);
         assertThat(history.get(0).getCalculatedAt())
                 .isAfterOrEqualTo(history.get(1).getCalculatedAt());
@@ -48,44 +58,34 @@ class QuoteServiceImplTest {
 
     @Test
     void recalculateAll_generalPerformance_createsQuoteWithCorrectScore() {
-        Player p = playerRepository.save(playerWithStats("Messi", PlayerPosition.FORWARD,
-                10, 3, 5, 1, 4, 2, 0, 8.0));
-
         quoteService.recalculateAll(ValuationStrategy.GENERAL_PERFORMANCE);
 
-        Quote quote = quoteService.findByPlayerId(p.getId()).get(0);
+        Quote quote = quoteService.findByPlayerId(salah.getId()).get(0);
         assertThat(quote.getScore()).isCloseTo(5.75, within(0.0001));
         assertThat(quote.getStrategy()).isEqualTo(ValuationStrategy.GENERAL_PERFORMANCE);
     }
 
     @Test
     void recalculateAll_generalPerformance_updatesPlayerPrice() {
-        Player p = playerRepository.save(playerWithStats("Messi", PlayerPosition.FORWARD,
-                10, 3, 5, 1, 4, 2, 0, 8.0));
-
         quoteService.recalculateAll(ValuationStrategy.GENERAL_PERFORMANCE);
 
-        Player updated = playerRepository.findById(p.getId()).orElseThrow();
+        Player updated = playerRepository.findById(salah.getId()).orElseThrow();
         assertThat(updated.getCurrentTokenPrice()).isEqualByComparingTo("58.5");
     }
 
     @Test
     void recalculateAll_positionWeighted_forward_usesCorrectWeights() {
-        Player p = playerRepository.save(playerWithStats("Messi", PlayerPosition.FORWARD,
-                10, 3, 5, 0, 4, 0, 0, 8.0));
-
         quoteService.recalculateAll(ValuationStrategy.POSITION_WEIGHTED);
 
-        Quote quote = quoteService.findByPlayerId(p.getId()).get(0);
+        Quote quote = quoteService.findByPlayerId(salah.getId()).get(0);
         assertThat(quote.getScore()).isCloseTo(6.75, within(0.0001));
         assertThat(quote.getCurrentTokenPrice()).isEqualByComparingTo("68.5");
     }
 
     @Test
     void recalculateAll_positionWeighted_defender_usesCorrectWeights() {
-        Player p = playerRepository.save(playerWithStats("Ramos", PlayerPosition.DEFENDER,
-                1, 0, 0, 0, 3, 8, 6, 7.5));
-
+        Player p = playerRepository.save(Player.builder().name("Ramos").team("Team A").playerPosition(PlayerPosition.DEFENDER)
+                .goals(1).assists(0).shots(0).keyPasses(0).dribbles(3).tackles(8).interceptions(6).rating(7.5).league(League.PL.getFullName()).build());
         quoteService.recalculateAll(ValuationStrategy.POSITION_WEIGHTED);
 
         Quote quote = quoteService.findByPlayerId(p.getId()).get(0);
@@ -95,8 +95,8 @@ class QuoteServiceImplTest {
 
     @Test
     void recalculateAll_positionWeighted_midfielder_usesCorrectWeights() {
-        Player p = playerRepository.save(playerWithStats("Modric", PlayerPosition.MIDFIELDER,
-                3, 5, 0, 7, 6, 4, 0, 8.0));
+        Player p = playerRepository.save(Player.builder().name("Modric").team("Team A").playerPosition(PlayerPosition.MIDFIELDER)
+                .goals(3).assists(5).shots(0).keyPasses(7).dribbles(6).tackles(4).interceptions(0).rating(8.0).league(League.PL.getFullName()).build());
 
         quoteService.recalculateAll(ValuationStrategy.POSITION_WEIGHTED);
 
@@ -107,20 +107,20 @@ class QuoteServiceImplTest {
 
     @Test
     void recalculateAll_positionWeighted_goalkeeper_usesCorrectWeights() {
-        Player p = playerRepository.save(playerWithStats("Courtois", PlayerPosition.GOALKEEPER,
-                0, 0, 0, 0, 0, 3, 4, 9.0));
+        Player p = playerRepository.save(Player.builder().name("Courtois").team("Team A").playerPosition(PlayerPosition.GOALKEEPER)
+                .goals(1).assists(0).shots(0).keyPasses(0).dribbles(3).tackles(8).interceptions(6).rating(7.5).league(League.PL.getFullName()).build());
 
         quoteService.recalculateAll(ValuationStrategy.POSITION_WEIGHTED);
 
         Quote quote = quoteService.findByPlayerId(p.getId()).get(0);
-        assertThat(quote.getScore()).isCloseTo(6.8, within(0.0001));
-        assertThat(quote.getCurrentTokenPrice()).isEqualByComparingTo("69.0");
+        assertThat(quote.getScore()).isCloseTo(7.3, within(0.0001));
+        assertThat(quote.getCurrentTokenPrice()).isEqualByComparingTo("74.000");
     }
 
     @Test
     void recalculateAll_recordsStrategyOnQuote() {
-        Player p = playerRepository.save(player("Messi", PlayerPosition.FORWARD));
-
+        Player p = playerRepository.save(Player.builder().name("Messi").team("Team A").playerPosition(PlayerPosition.FORWARD)
+                .goals(10).assists(3).shots(5).keyPasses(1).dribbles(4).tackles(2).interceptions(0).rating(8.0).league(League.PL.getFullName()).build());
         quoteService.recalculateAll(ValuationStrategy.POSITION_WEIGHTED);
 
         Quote quote = quoteService.findByPlayerId(p.getId()).get(0);
@@ -130,9 +130,7 @@ class QuoteServiceImplTest {
     @Test
     void recalculateAll_multiplePlayers_createsOneQuoteEach() {
         playerRepository.saveAll(List.of(
-                player("Messi",    PlayerPosition.FORWARD),
-                player("Ramos",    PlayerPosition.DEFENDER),
-                player("Courtois", PlayerPosition.GOALKEEPER)
+                salah,martinelli
         ));
 
         quoteService.recalculateAll(ValuationStrategy.GENERAL_PERFORMANCE);
@@ -140,25 +138,5 @@ class QuoteServiceImplTest {
         playerRepository.findAll().forEach(p ->
                 assertThat(quoteService.findByPlayerId(p.getId())).hasSize(1)
         );
-    }
-
-    private Player player(String name, PlayerPosition position) {
-        return new Player(name, "Team A", "League A", position);
-    }
-
-    private Player playerWithStats(String name, PlayerPosition position,
-                                   double goals, double assists, double shots,
-                                   double keyPasses, double dribbles, double tackles,
-                                   double interceptions, double rating) {
-        Player p = new Player(name, "Team A", "League A", position);
-        p.setGoals(goals);
-        p.setAssists(assists);
-        p.setShots(shots);
-        p.setKeyPasses(keyPasses);
-        p.setDribbles(dribbles);
-        p.setTackles(tackles);
-        p.setInterceptions(interceptions);
-        p.setRating(rating);
-        return p;
     }
 }
