@@ -15,14 +15,20 @@ class PositionTest {
 
     @BeforeEach
     void setUp() {
-        player = new Player("Messi", "Inter Miami", "MLS", PlayerPosition.FORWARD);
+        player = Player.builder()
+                .name("Messi")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.FORWARD)
+                .currentTokenPrice(new BigDecimal("5.00"))
+                .build();
+        player.setCurrentTokenPrice(new BigDecimal("5.00"));
         player.setCurrentTokenPrice(new BigDecimal("5.00"));
 
         position = new Position();
         position.setPlayer(player);
     }
 
-    // --- registerPurchase ---
 
     @Test
     void registerPurchase_setsTokensAndAveragePrice() {
@@ -137,8 +143,6 @@ class PositionTest {
         assertThrows(IllegalStateException.class, () -> position.registerSell(3));
     }
 
-    // --- getCurrentValue ---
-
     @Test
     void getCurrentValue_returnsTokensTimesCurrentPrice() {
         position.registerPurchase(10, new BigDecimal("5.00")); // player price = 5.00
@@ -158,15 +162,11 @@ class PositionTest {
         assertEquals(0, BigDecimal.ZERO.compareTo(position.getCurrentValue()));
     }
 
-    // --- getInvestedAmount ---
-
     @Test
     void getInvestedAmount_returnsTokensTimesAveragePrice() {
         position.registerPurchase(10, new BigDecimal("4.00"));
         assertEquals(0, new BigDecimal("40.00").compareTo(position.getInvestedAmount()));
     }
-
-    // --- getProfitLoss ---
 
     @Test
     void getProfitLoss_zeroProfitWhenPriceUnchanged() {

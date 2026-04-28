@@ -17,13 +17,21 @@ class PortfolioTest {
 
     @BeforeEach
     void setUp() {
-        user = new User("leandro", new BigDecimal("1000.00"), false);
+        user = User.builder()
+                .username("leandro")
+                .balance(new BigDecimal("1000.00"))
+                .superuser(false)
+                .portfolio(Portfolio.builder().build())
+                .build();
         portfolio = user.getPortfolio();
-        player = new Player("Messi", "Inter Miami", "MLS", PlayerPosition.FORWARD);
+        player = Player.builder()
+                .name("Messi")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
         player.setCurrentTokenPrice(new BigDecimal("10.00"));
     }
-
-    // --- registerPurchase: happy path ---
 
     @Test
     void registerPurchase_createsPositionForPlayer() {
@@ -49,7 +57,12 @@ class PortfolioTest {
 
     @Test
     void registerPurchase_multiplePlayers_createsOnePositionEach() {
-        Player other = new Player("Ronaldo", "Al Nassr", "Saudi Pro League", PlayerPosition.FORWARD);
+        Player other = Player.builder()
+                .name("Ronaldo")
+                .team("Al Nassr")
+                .league("Saudi Pro League")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
         other.setCurrentTokenPrice(new BigDecimal("8.00"));
 
         portfolio.registerPurchase(player, 3);
@@ -57,8 +70,6 @@ class PortfolioTest {
 
         assertEquals(2, portfolio.getPositions().size());
     }
-
-    // --- registerPurchase: validations ---
 
     @Test
     void registerPurchase_nullPlayer_throws() {
@@ -123,8 +134,6 @@ class PortfolioTest {
         assertTrue(portfolio.getPositions().isEmpty());
     }
 
-    // --- registerSell: validations ---
-
     @Test
     void registerSell_noExistingPosition_throws() {
         assertThrows(IllegalArgumentException.class,
@@ -166,7 +175,12 @@ class PortfolioTest {
 
     @Test
     void getCurrentValue_withMultiplePositions_returnsSum() {
-        Player other = new Player("Ronaldo", "Al Nassr", "Saudi Pro League", PlayerPosition.FORWARD);
+        Player other = Player.builder()
+                .name("Ronaldo")
+                .team("Al Nassr")
+                .league("Saudi Pro League")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
         other.setCurrentTokenPrice(new BigDecimal("5.00"));
 
         portfolio.registerPurchase(player, 10); // 10 * 10 = 100

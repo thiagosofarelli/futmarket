@@ -2,9 +2,7 @@ package com.ar.edu.unq.futmarket.model;
 
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -13,6 +11,8 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Player {
 
     @Id
@@ -33,12 +33,15 @@ public class Player {
     private PlayerPosition playerPosition;
 
     @Transient
+    @Builder.Default
     private int issuedTokens = 100;
 
     @Column(nullable = false)
+    @Builder.Default
     private int availableTokens = 100;
 
     @Column(nullable = false, precision = 10, scale = 4)
+    @Builder.Default
     private BigDecimal currentTokenPrice = BigDecimal.ONE;
 
     private double goals;

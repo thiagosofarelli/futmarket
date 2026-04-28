@@ -3,9 +3,7 @@ package com.ar.edu.unq.futmarket.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,6 +15,8 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Portfolio {
 
     @Id
@@ -27,6 +27,7 @@ public class Portfolio {
     @OneToOne(mappedBy = "portfolio")
     private User user;
 
+    @Builder.Default
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Position> positions = new ArrayList<>();
 

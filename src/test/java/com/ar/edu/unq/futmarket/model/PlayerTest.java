@@ -14,7 +14,12 @@ class PlayerTest {
 
     @BeforeEach
     void setUp() {
-        player = new Player("Messi", "Inter Miami", "MLS", PlayerPosition.FORWARD);
+        player = Player.builder()
+                .name("Messi")
+                .team("Inter Miami")
+                .league("MLS")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
     }
 
     // --- Constructor ---
