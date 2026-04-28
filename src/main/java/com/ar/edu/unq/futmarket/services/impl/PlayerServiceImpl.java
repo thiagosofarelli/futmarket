@@ -9,8 +9,10 @@ import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.services.PlayerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationContext;
 import java.util.Comparator;
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final WhoScoredScraper whoScoredScraper;
     private final FootballDataClient footballDataClient;
+    private final ApplicationContext applicationContext;
 
     public List<Player> findAll() {
         return playerRepository.findAll();
@@ -59,50 +62,46 @@ public class PlayerServiceImpl implements PlayerService {
         whoScoredScraper.syncPlayerStats(playerRepository.findPlayersByLeague(league.getFullName()));
     }
 
-    /**
-     * Monday night: Premier League
-     */
-    @Scheduled(cron = "0 0 22 * * 1")
+    public void syncPlayersStatsForAllLeagues() {
+        PlayerService proxy = applicationContext.getBean(PlayerService.class);
+        proxy.syncLigue1Stats();
+        proxy.syncPremierLeagueStats();
+        proxy.syncBundesligaStats();
+        proxy.syncLaLigaStats();
+        proxy.syncSerieAStats();
+    }
+
+    @Scheduled(cron = "0 0 22 * * 2")
+    @Async
     public void syncPremierLeagueStats() {
         syncPlayersStatsByLeague(League.PL);
     }
 
-    /**
-     * Tuesday night: La Liga
-     */
-    @Scheduled(cron = "0 0 22 * * 2")
+    @Scheduled(cron = "0 0 22 * * 3")
+    @Async
     public void syncLaLigaStats() {
         syncPlayersStatsByLeague(League.PD);
     }
 
-    /**
-     * Wednesday night: Ligue 1
-     */
-    @Scheduled(cron = "0 0 22 * * 3")
+    @Scheduled(cron = "0 0 22 * * 4")
+    @Async
     public void syncLigue1Stats() {
         syncPlayersStatsByLeague(League.FL1);
     }
 
-    /**
-     * Thursday night: Bundesliga
-     */
-    @Scheduled(cron = "0 0 22 * * 4")
+    @Scheduled(cron = "0 0 22 * * 5")
+    @Async
     public void syncBundesligaStats() {
         syncPlayersStatsByLeague(League.BL1);
     }
 
-    /**
-     * Friday night: Serie A
-     */
-    @Scheduled(cron = "0 0 22 * * 5")
+    @Scheduled(cron = "0 0 22 * * 6")
+    @Async
     public void syncSerieAStats() {
         syncPlayersStatsByLeague(League.SA);
     }
 
-    /**
-     * Daily sync at 22:00 (10 PM)
-     */
-    @Scheduled(cron = "0 0 22 * * *")
+    @Scheduled(cron = "0 0 22 * * 1")
     public void syncPlayers() {
         footballDataClient.syncPlayers();
     }

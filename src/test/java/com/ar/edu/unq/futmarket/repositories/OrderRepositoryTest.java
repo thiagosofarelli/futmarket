@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,17 +83,22 @@ class OrderRepositoryTest {
         Order o1 = Order.builder()
                 .buyer(alice).seller(superuser).player(messi)
                 .pricePerToken(new BigDecimal("2.00")).type(OrderType.BUY)
-                .tokenQuantity(3).totalAmount(new BigDecimal("6.00")).build();
+                .tokenQuantity(3).totalAmount(new BigDecimal("6.00"))
+                .createdAt(LocalDateTime.now().minusDays(1))
+                .build();
 
         Order o2 = Order.builder()
                 .buyer(alice).seller(superuser).player(ramos)
                 .pricePerToken(new BigDecimal("1.50")).type(OrderType.BUY)
-                .tokenQuantity(1).totalAmount(new BigDecimal("1.50")).build();
+                .tokenQuantity(1).totalAmount(new BigDecimal("1.50"))
+                .createdAt(LocalDateTime.now())
+                .build();
 
         orderRepository.save(o1);
         orderRepository.save(o2);
 
         List<Order> result = orderRepository.findByBuyerOrderByCreatedAtDesc(alice);
+
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getPlayer().getName()).isEqualTo("Ramos");
     }
