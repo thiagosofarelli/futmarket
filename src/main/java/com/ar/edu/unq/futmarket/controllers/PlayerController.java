@@ -35,9 +35,8 @@ public class PlayerController {
     public ResponseEntity<List<PlayerDTO>> getPlayers(
             @RequestParam(required = false) League league,
             @RequestParam(required = false) String team,
-            @RequestParam(required = false) String playerPosition) {
-        PlayerPosition parsedPosition = parsePosition(playerPosition);
-        List<Player> players = playerService.findByFilters(league, team, parsedPosition);
+            @RequestParam(required = false) PlayerPosition playerPosition) {
+        List<Player> players = playerService.findByFilters(league, team, playerPosition);
         List<PlayerDTO> dtos = players.stream()
                 .map(player -> modelMapper.map(player, PlayerDTO.class))
                 .collect(Collectors.toList());
@@ -76,12 +75,5 @@ public class PlayerController {
     public ResponseEntity<Void> syncPlayersStatsByLeague(@PathVariable League league) {
         playerService.syncPlayersStatsByLeague(league);
         return ResponseEntity.ok().build();
-    }
-
-    private PlayerPosition parsePosition(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return PlayerPosition.valueOf(value.trim().toUpperCase());
     }
 }
