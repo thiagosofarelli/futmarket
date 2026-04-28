@@ -5,6 +5,7 @@ import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.enums.League;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
+import com.ar.edu.unq.futmarket.services.impl.PlayerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
-class PlayerServiceTest {
+class PlayerServiceImplTest {
 
     @Autowired
-    private PlayerService playerService;
+    private PlayerServiceImpl playerService;
 
     @Autowired
     private PlayerRepository playerRepository;

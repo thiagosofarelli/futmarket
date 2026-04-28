@@ -4,9 +4,9 @@ import com.ar.edu.unq.futmarket.controllers.dto.UserDTO;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Portfolio;
 import com.ar.edu.unq.futmarket.model.User;
-import com.ar.edu.unq.futmarket.services.OrderService;
-import com.ar.edu.unq.futmarket.services.PortfolioService;
-import com.ar.edu.unq.futmarket.services.UserService;
+import com.ar.edu.unq.futmarket.services.impl.OrderServiceImpl;
+import com.ar.edu.unq.futmarket.services.impl.PortfolioServiceImpl;
+import com.ar.edu.unq.futmarket.services.impl.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +19,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final PortfolioService portfolioService;
-    private final OrderService orderService;
-    private final UserService userService;
+    private final PortfolioServiceImpl portfolioService;
+    private final OrderServiceImpl orderService;
+    private final UserServiceImpl userService;
     private final ModelMapper modelMapper;
 
     @GetMapping("/{id}/portfolio")

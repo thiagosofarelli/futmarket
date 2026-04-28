@@ -17,8 +17,8 @@ import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
-import com.ar.edu.unq.futmarket.services.PlayerService;
-import com.ar.edu.unq.futmarket.services.QuoteService;
+import com.ar.edu.unq.futmarket.services.impl.PlayerServiceImpl;
+import com.ar.edu.unq.futmarket.services.impl.QuoteServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,16 +27,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PlayerController {
 
-    private final PlayerService playerService;
-    private final QuoteService quoteService;
+    private final PlayerServiceImpl playerService;
+    private final QuoteServiceImpl quoteService;
     private final ModelMapper modelMapper;
 
     @GetMapping
     public ResponseEntity<List<PlayerDTO>> getPlayers(
             @RequestParam(required = false) League league,
             @RequestParam(required = false) String team,
-            @RequestParam(required = false) PlayerPosition position) {
-        List<Player> players = playerService.findByFilters(league, team, position);
+            @RequestParam(required = false) PlayerPosition playerPosition) {
+        List<Player> players = playerService.findByFilters(league, team, playerPosition);
         List<PlayerDTO> dtos = players.stream()
                 .map(player -> modelMapper.map(player, PlayerDTO.class))
                 .collect(Collectors.toList());
@@ -71,9 +71,9 @@ public class PlayerController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/stats/sync/{league}") // Send PL/BL1/FL1/PD/SA
-    public ResponseEntity<Void> syncStatsByLeague(@PathVariable League league) {
-        playerService.syncStatsByLeague(league);
+    @PostMapping("/sync/stats/{league}") // Send PL/BL1/FL1/PD/SA
+    public ResponseEntity<Void> syncPlayersStatsByLeague(@PathVariable League league) {
+        playerService.syncPlayersStatsByLeague(league);
         return ResponseEntity.ok().build();
     }
 }

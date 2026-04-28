@@ -8,8 +8,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.io.InvalidClassException;
-
 @ControllerAdvice
 public class RestExceptionHandler {
 
@@ -53,7 +51,7 @@ public class RestExceptionHandler {
         return buildErrorResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(InvalidClassException.class)
+    @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiError> handleInvalidCredentials(Exception ex) {
         return buildErrorResponse(ex, HttpStatus.UNAUTHORIZED);
     }

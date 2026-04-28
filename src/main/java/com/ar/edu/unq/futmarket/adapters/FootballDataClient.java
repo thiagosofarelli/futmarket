@@ -42,7 +42,6 @@ public class FootballDataClient {
     private final WhoScoredScraper whoScoredScraper;
     private final String BASE_URL = "https://api.football-data.org/v4";
 
-    @Scheduled(cron = "${futmarket.players.sync.cron:0 0 * * * *}")
     public void syncPlayers() {
         if (apiKey == null || apiKey.isBlank()) {
             return;
@@ -63,6 +62,7 @@ public class FootballDataClient {
             String url = BASE_URL + "/competitions/" + code + "/teams";
             try {
                 ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+                System.out.println(response.getBody());
                 Map<String, Object> body = response.getBody();
                 if (body == null) {
                     continue;
@@ -80,12 +80,6 @@ public class FootballDataClient {
                         if (player != null) {
                             batchPlayers.add(player);
                         }
-                    }
-
-                    // Trigger WhoScored sync async after each team
-                    if (!batchPlayers.isEmpty()) {
-                        whoScoredScraper.syncPlayerStatsAsync(batchPlayers);
-                        batchPlayers.clear();
                     }
                 }
             } catch (RestClientException ex) {
@@ -157,10 +151,20 @@ public class FootballDataClient {
         }
 
         return switch (apiPosition.trim().toLowerCase()) {
-            case "goalkeeper" -> PlayerPosition.GOALKEEPER;
-            case "offence" -> PlayerPosition.FORWARD;
-            case "defence" -> PlayerPosition.DEFENDER;
-            default -> PlayerPosition.MIDFIELDER;
+            case "goalkeeper" ->
+                    PlayerPosition.GOALKEEPER;
+
+            case "defence", "centre-back", "left-back", "right-back" ->
+                    PlayerPosition.DEFENDER;
+
+            case "midfield", "defensive midfield", "central midfield", "attacking midfield", "right midfield" ->
+                    PlayerPosition.MIDFIELDER;
+
+            case "offence", "centre-forward", "left winger", "right winger" ->
+                    PlayerPosition.FORWARD;
+
+            default ->
+                    PlayerPosition.MIDFIELDER;
         };
     }
 
