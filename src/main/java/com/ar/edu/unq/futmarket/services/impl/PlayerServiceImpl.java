@@ -12,10 +12,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PlayerServiceImpl implements PlayerService {
@@ -59,7 +64,19 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public void syncPlayersStatsByLeague(League league) {
-        whoScoredScraper.syncPlayerStats(playerRepository.findPlayersByLeague(league.getFullName()));
+        // Umbral: Hoy a las 00:00:00
+        LocalDateTime threshold = LocalDate.now().atStartOfDay();
+
+        List<Player> playersToSync = playerRepository.findPlayersNeedsSync(
+                league.getFullName(),
+                threshold
+        );
+
+        if (!playersToSync.isEmpty()) {
+            whoScoredScraper.syncPlayerStats(playersToSync);
+        } else {
+            log.info("Todos los jugadores de {} ya están actualizados para el día de hoy");
+        }
     }
 
     public void syncPlayersStatsForAllLeagues() {

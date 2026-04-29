@@ -129,16 +129,14 @@ public class FootballDataClient {
             return playerRepository.save(player);
         }
 
-        Player player = new Player(playerName, teamName, leagueName, position);
-        player.setExternalId(externalId);
-        player.setGoals(0);
-        player.setAssists(0);
-        player.setShots(0);
-        player.setKeyPasses(0);
-        player.setDribbles(0);
-        player.setTackles(0);
-        player.setInterceptions(0);
-        player.setRating(0.0);
+        Player player = Player.builder()
+                .name(playerName)
+                .team(teamName)
+                .league(leagueName)
+                .playerPosition(position)
+                .externalId(externalId)
+                .build();
+
         return playerRepository.save(player);
     }
 

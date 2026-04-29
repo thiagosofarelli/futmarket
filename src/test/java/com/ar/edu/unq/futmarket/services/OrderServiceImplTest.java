@@ -225,10 +225,4 @@ class OrderServiceImplTest {
                 .roles("USER")
                 .build();
     }
-
-    private Player player(String name, PlayerPosition position, String price) {
-        Player p = new Player(name, "Team A", "League A", position);
-        p.setCurrentTokenPrice(new BigDecimal(price));
-        return p;
-    }
 }
