@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -116,6 +117,7 @@ public class WhoScoredScraper {
                 player.setKeyPasses(keyPasses);
                 player.setDribbles(dribblings);
                 player.setRating(rating);
+                player.setLastStatsSync(LocalDateTime.now());
 
             }
         } catch (Exception e) {
