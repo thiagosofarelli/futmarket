@@ -117,13 +117,13 @@ public class WhoScoredScraper {
                 player.setKeyPasses(keyPasses);
                 player.setDribbles(dribblings);
                 player.setRating(rating);
-                player.setLastStatsSync(LocalDateTime.now());
 
             }
         } catch (Exception e) {
             log.debug("Offensive stats not found for player: {}", player.getName());
         }
 
+        player.setLastStatsSync(LocalDateTime.now());
         playerRepository.save(player);
         log.info("Stats updated for player: {}", player.getName());
     }

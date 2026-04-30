@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -28,6 +29,7 @@ public class PlayerDTO {
     public Double interceptions;
     public Double rating;
     public Integer availableTokens;
+    public LocalDateTime lastStatsSync;
     public String externalId;
 }
 
