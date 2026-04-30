@@ -74,12 +74,12 @@ public class PlayerController {
     @PostMapping("/stats/sync")
     public ResponseEntity<Void> syncStats() {
         playerService.syncPlayersStatsForAllLeagues();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
     }
 
     @PostMapping("/stats/sync/{league}") // Send PL/BL1/FL1/PD/SA
     public ResponseEntity<Void> syncPlayersStatsByLeague(@PathVariable League league) {
         playerService.syncPlayersStatsByLeague(league);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
     }
 }

@@ -1,13 +1,17 @@
 package com.ar.edu.unq.futmarket.repositories;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.ar.edu.unq.futmarket.model.enums.League;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +33,9 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
     List<Player> findPlayersByTeamAndPlayerPosition(String team, PlayerPosition position);
 
     Optional<Player> findPlayerByExternalId(Long externalId);
+
+    @Query("SELECT p FROM Player p WHERE p.league = :leagueName " +
+            "AND (p.lastStatsSync IS NULL OR p.lastStatsSync < :threshold)")
+    List<Player> findPlayersNeedsSync(@Param("leagueName") String leagueName,
+                                      @Param("threshold") LocalDateTime threshold);
 }

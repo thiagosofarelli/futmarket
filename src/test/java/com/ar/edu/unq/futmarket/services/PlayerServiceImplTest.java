@@ -148,13 +148,6 @@ class PlayerServiceImplTest {
         assertThat(ranking.get(0).getName()).isEqualTo("Courtois");
     }
 
-    private Player player(String name, String team, League league,
-                          PlayerPosition position, String price) {
-        Player p = new Player(name, team, league.getFullName(), position);
-        p.setCurrentTokenPrice(new BigDecimal(price));
-        return p;
-    }
-
     private Player save(Player p) {
         return playerRepository.save(p);
     }
