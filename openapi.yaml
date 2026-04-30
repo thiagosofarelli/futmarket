@@ -152,10 +152,17 @@ paths:
       responses:
         '200':
           description: OK
-  /players/sync/stats/{league}:
+  /players/stats/sync:
+    post:
+      summary: Sync stats for all leagues
+      description: Syncs player stats for all supported leagues.
+      responses:
+        '202':
+          description: Accepted
+  /players/stats/sync/{league}:
     post:
       summary: Sync stats by league
-      description: Syncs player stats by league.
+      description: Syncs player stats for a specific league.
       parameters:
         - in: path
           name: league
@@ -163,8 +170,8 @@ paths:
           schema:
             $ref: '#/components/schemas/League'
       responses:
-        '200':
-          description: OK
+        '202':
+          description: Accepted
   /quotes/recalculate:
     post:
       summary: Recalculate quotes
@@ -429,24 +436,35 @@ components:
           type: number
           format: double
         goals:
-          type: integer
+          type: number
+          format: double
         assists:
-          type: integer
+          type: number
+          format: double
         shots:
-          type: integer
+          type: number
+          format: double
         keyPasses:
-          type: integer
+          type: number
+          format: double
         dribbles:
-          type: integer
+          type: number
+          format: double
         tackles:
-          type: integer
+          type: number
+          format: double
         interceptions:
-          type: integer
+          type: number
+          format: double
         rating:
           type: number
           format: double
         availableTokens:
           type: integer
+        lastStatsSync:
+          type: string
+          format: date-time
+          nullable: true
         externalId:
           type: string
       required: [id, name, league, team, playerPosition, currentTokenPrice, availableTokens]
