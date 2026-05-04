@@ -38,7 +38,7 @@ public class PlayerController {
             @RequestParam(required = false) League league,
             @RequestParam(required = false) String team,
             @RequestParam(required = false) PlayerPosition playerPosition,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 200) Pageable pageable) {
         Page<PlayerDTO> dtos = playerService.findByFilters(league, team, playerPosition, pageable)
                 .map(player -> modelMapper.map(player, PlayerDTO.class));
         return ResponseEntity.ok(dtos);
