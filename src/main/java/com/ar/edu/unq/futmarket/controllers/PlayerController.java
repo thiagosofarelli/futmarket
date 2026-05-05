@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.ar.edu.unq.futmarket.model.enums.League;
+import com.ar.edu.unq.futmarket.services.PlayerService;
+import com.ar.edu.unq.futmarket.services.QuoteService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +19,6 @@ import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
-import com.ar.edu.unq.futmarket.services.impl.PlayerServiceImpl;
-import com.ar.edu.unq.futmarket.services.impl.QuoteServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,8 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PlayerController {
 
-    private final PlayerServiceImpl playerService;
-    private final QuoteServiceImpl quoteService;
+    private final PlayerService playerService;
+    private final QuoteService quoteService;
     private final ModelMapper modelMapper;
 
     @GetMapping

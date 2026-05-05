@@ -3,7 +3,7 @@ package com.ar.edu.unq.futmarket.controllers;
 import com.ar.edu.unq.futmarket.controllers.dto.QuoteDTO;
 import com.ar.edu.unq.futmarket.controllers.request.RecalculateRequest;
 import com.ar.edu.unq.futmarket.model.Quote;
-import com.ar.edu.unq.futmarket.services.impl.QuoteServiceImpl;
+import com.ar.edu.unq.futmarket.services.QuoteService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuoteController {
 
-    private final QuoteServiceImpl quoteService;
+    private final QuoteService quoteService;
     private final ModelMapper modelMapper;
 
     @PostMapping("/recalculate")

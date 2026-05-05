@@ -64,10 +64,10 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public void syncPlayersStatsByLeague(League league) {
-        // Umbral: Hoy a las 00:00:00
+        // Threshold: today at 00:00. Only players with lastStatsSync before this will be updated.
         LocalDateTime threshold = LocalDate.now().atStartOfDay();
 
-        List<Player> playersToSync = playerRepository.findPlayersNeedsSync(
+        List<Player> playersToSync = playerRepository.findPlayersNeedsStatsSync(
                 league.getFullName(),
                 threshold
         );
@@ -75,7 +75,7 @@ public class PlayerServiceImpl implements PlayerService {
         if (!playersToSync.isEmpty()) {
             whoScoredScraper.syncPlayerStats(playersToSync);
         } else {
-            log.info("Todos los jugadores de {} ya están actualizados para el día de hoy");
+            log.info("All players have their stats up to date for league: {}", league.getFullName());
         }
     }
 
