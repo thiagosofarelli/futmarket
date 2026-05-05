@@ -1,0 +1,24 @@
+---------------------------------------------------------------------
+TAG desapp_grupoB_futmarket_release1-1.0
+---------------------------------------------------------------------
+NEW FEATURES:
+* User authentication with registration and login, returning JWT.
+* User management, including detail lookup, portfolio and transactions.
+* Player catalog with filters by league, team and position, plus ranking by current price.
+* Player detail view and quote history retrieval.
+* Buying and selling of tokens, updating balance, portfolio, positions and token availability.
+* Full persistence with Spring Data JPA on PostgreSQL, with H2 support for tests.
+* Centralized error handling with `RestExceptionHandler` and `ApiError` responses.
+* Initial player loading from the Football-Data API.
+* Synchronization of player statistics from WhoScored using Selenium.
+
+NOTES:
+* The application is prepared to run with Docker Compose and exposes the backend on port 8080.
+* To use authentication features and buy/sell operations an authenticated user is required.
+* The system requires prior configuration of the Football-Data API Key, a secret key for signing JWTs, and an environment compatible with Selenium/Chrome locally.
+* Unit and repository tests are provided to validate the domain, services and external synchronization.
+
+KNOWN ISSUES:
+* Statistics synchronization may depend on the external site and return partial results if WhoScored changes its HTML structure.
+* Scraping requires a compatible browser and driver; in some environments it may fail if Chrome or Selenium are not properly configured.
+* Some players loaded during initialization do not have statistics available on WhoScored, which may result in incomplete data for those cases.
