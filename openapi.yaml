@@ -56,7 +56,7 @@ paths:
   /players:
     get:
       summary: Player list
-      description: Returns the player catalog with optional filters.
+      description: Returns the player catalog with optional filters and pagination.
       parameters:
         - in: query
           name: league
@@ -73,15 +73,31 @@ paths:
           schema:
             $ref: '#/components/schemas/PlayerPosition'
           description: Filter by position.
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-indexed).
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page.
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: name
+          description: Field to sort by (e.g., name, currentTokenPrice).
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PlayerDTO'
+                $ref: '#/components/schemas/PagePlayerDTO'
   /players/ranking:
     get:
       summary: Player ranking
@@ -374,6 +390,33 @@ components:
     ValuationStrategy:
       type: string
       enum: [GENERAL_PERFORMANCE, POSITION_WEIGHTED]
+    PagePlayerDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerDTO'
+          description: List of players for the current page.
+        totalPages:
+          type: integer
+          description: Total number of pages.
+        totalElements:
+          type: integer
+          description: Total number of elements.
+        currentPage:
+          type: integer
+          description: Current page number (0-indexed).
+        pageSize:
+          type: integer
+          description: Number of elements per page.
+        hasNext:
+          type: boolean
+          description: Whether there is a next page.
+        hasPrevious:
+          type: boolean
+          description: Whether there is a previous page.
+      required: [content, totalPages, totalElements, currentPage, pageSize, hasNext, hasPrevious]
     LoginRequest:
       type: object
       properties:
