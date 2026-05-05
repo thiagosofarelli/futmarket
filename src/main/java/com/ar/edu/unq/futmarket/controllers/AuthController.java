@@ -3,7 +3,7 @@ package com.ar.edu.unq.futmarket.controllers;
 import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
 import com.ar.edu.unq.futmarket.controllers.request.LoginRequest;
 import com.ar.edu.unq.futmarket.controllers.request.RegisterRequest;
-import com.ar.edu.unq.futmarket.services.impl.AuthServiceImpl;
+import com.ar.edu.unq.futmarket.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthServiceImpl authService;
+    private final AuthService authService;
     private final ModelMapper modelMapper;
 
     @PostMapping("/register")

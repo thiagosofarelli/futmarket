@@ -14,6 +14,7 @@ import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     Page<Player> findPlayersByLeague(String league, Pageable pageable);
@@ -34,6 +35,6 @@ public interface PlayerRepository extends JpaRepository<Player, Long> {
 
     @Query("SELECT p FROM Player p WHERE p.league = :leagueName " +
             "AND (p.lastStatsSync IS NULL OR p.lastStatsSync < :threshold)")
-    List<Player> findPlayersNeedsSync(@Param("leagueName") String leagueName,
+    List<Player> findPlayersNeedsStatsSync(@Param("leagueName") String leagueName,
                                       @Param("threshold") LocalDateTime threshold);
 }

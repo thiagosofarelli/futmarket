@@ -10,25 +10,27 @@ import java.util.List;
 
 public interface PlayerService {
 
-    public List<Player> findAll();
+    List<Player> findAll();
 
-    public Player findById(Long id);
+    Player findById(Long id);
 
-    public Page<Player> findByFilters(League league, String team, PlayerPosition position, Pageable pageable);
+    Page<Player> findByFilters(League league, String team, PlayerPosition position, Pageable pageable);
 
-    public List<Player> getRanking();
+    List<Player> getRanking();
 
-    public void syncPlayersStatsByLeague(League league);
+    void syncPlayersStatsByLeague(League league);
 
-    public void syncPremierLeagueStats();
+    void syncPlayersStatsForAllLeagues();
 
-    public void syncLaLigaStats();
+    void syncPremierLeagueStats();
 
-    public void syncLigue1Stats();
+    void syncLaLigaStats();
 
-    public void syncBundesligaStats();
+    void syncLigue1Stats();
 
-    public void syncSerieAStats();
+    void syncBundesligaStats();
 
-    public void syncPlayers();
+    void syncSerieAStats();
+
+    void syncPlayers();
 }
