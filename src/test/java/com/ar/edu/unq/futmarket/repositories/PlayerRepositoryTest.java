@@ -6,6 +6,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -58,32 +61,36 @@ class PlayerRepositoryTest {
 
     @Test
     void findByLeague_returnsOnlyMatchingLeague() {
-        List<Player> result = playerRepository.findPlayersByLeague("MLS");
-        assertThat(result).hasSize(2)
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Player> resultPage = playerRepository.findPlayersByLeague("MLS", pageable);
+        assertThat(resultPage.getContent()).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ramos");
     }
 
     @Test
     void findByTeam_returnsOnlyMatchingTeam() {
-        List<Player> result = playerRepository.findPlayersByTeam("Inter Miami");
-        assertThat(result).hasSize(2)
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Player> resultPage = playerRepository.findPlayersByTeam("Inter Miami", pageable);
+        assertThat(resultPage.getContent()).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ramos");
     }
 
     @Test
     void findByPlayerPosition_returnsForwards() {
-        List<Player> forwards = playerRepository.findPlayersByPlayerPosition(PlayerPosition.FORWARD);
-        assertThat(forwards).hasSize(2)
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Player> forwardsPage = playerRepository.findPlayersByPlayerPosition(PlayerPosition.FORWARD, pageable);
+        assertThat(forwardsPage.getContent()).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Messi", "Ronaldo");
     }
 
     @Test
     void findByLeagueAndPlayerPosition_returnsDefendersInMLS() {
-        List<Player> result = playerRepository.findPlayersByLeagueAndPlayerPosition("MLS", PlayerPosition.DEFENDER);
-        assertThat(result).hasSize(1)
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Player> resultPage = playerRepository.findPlayersByLeagueAndPlayerPosition("MLS", PlayerPosition.DEFENDER, pageable);
+        assertThat(resultPage.getContent()).hasSize(1)
                 .extracting(Player::getName)
                 .containsExactly("Ramos");
     }
