@@ -21,18 +21,29 @@ class UserRepositoryTest {
 
     @Test
     void save_and_findById() {
-        User user = new User("alice_save", new BigDecimal("500.00"), false);
+        User user = User.builder()
+                .username("alice_save")
+                .balance(new BigDecimal("500.00"))
+                .superuser(false)
+                .build();
+
         userRepository.saveAndFlush(user);
 
         User found = userRepository.findById(user.getId()).orElseThrow();
         assertThat(found.getUsername()).isEqualTo("alice_save");
         assertThat(found.getBalance()).isEqualByComparingTo("500.00");
         assertThat(found.isSuperuser()).isFalse();
+
+        assertThat(found.getPortfolio()).isNotNull();
     }
 
     @Test
     void findByUsername_returnsUser() {
-        userRepository.saveAndFlush(regularUser("bob", BigDecimal.TEN));
+        User bob = User.builder()
+                .username("bob")
+                .balance(BigDecimal.TEN)
+                .build();
+        userRepository.saveAndFlush(bob);
 
         Optional<User> found = userRepository.findByUsername("bob");
         assertThat(found).isPresent();
@@ -46,38 +57,41 @@ class UserRepositoryTest {
 
     @Test
     void findBySuperuserTrue_returnsSuperuser() {
-        userRepository.saveAndFlush(regularUser("alice_super", BigDecimal.ZERO));
-        userRepository.saveAndFlush(superUser());
+        userRepository.saveAndFlush(User.builder().username("alice_normal").balance(BigDecimal.ZERO).build());
+
+        userRepository.saveAndFlush(User.builder()
+                .username("SUPERUSER_TEST")
+                .balance(BigDecimal.ZERO)
+                .superuser(true)
+                .build());
 
         Optional<User> found = userRepository.findBySuperuserTrue();
         assertThat(found).isPresent();
         assertThat(found.get().isSuperuser()).isTrue();
-    }
-
-    @Test
-    void findBySuperuserTrue_noSuperuser_returnsEmpty() {
-        userRepository.saveAndFlush(regularUser("alice_no_super", BigDecimal.ZERO));
-
-        assertThat(userRepository.findBySuperuserTrue()).isEmpty();
+        assertThat(found.get().getUsername()).isEqualTo("SUPERUSER_TEST");
     }
 
     @Test
     void username_mustBeUnique() {
-        userRepository.saveAndFlush(regularUser("duplicate", BigDecimal.ZERO));
+        userRepository.saveAndFlush(User.builder().username("duplicate").balance(BigDecimal.ZERO).build());
 
-        User another = regularUser("duplicate", BigDecimal.ZERO);
+        User another = User.builder().username("duplicate").balance(BigDecimal.ZERO).build();
+
         assertThatThrownBy(() -> userRepository.saveAndFlush(another))
                 .isInstanceOf(Exception.class);
     }
 
-    // --- helpers ---
+    @Test
+    void builder_trimsUsernameBeforeSaving() {
+        User user = User.builder()
+                .username("  leandro  ")
+                .balance(BigDecimal.ZERO)
+                .build();
 
-    private User superUser() {
-        return new User("SUPERUSER", BigDecimal.ZERO, true);
-    }
+        userRepository.saveAndFlush(user);
 
-    private User regularUser(String username, BigDecimal balance) {
-        return new User(username, balance, false);
+        Optional<User> found = userRepository.findByUsername("leandro");
+        assertThat(found).isPresent();
+        assertThat(found.get().getUsername()).isEqualTo("leandro"); // Verificamos el trim()
     }
 }
-

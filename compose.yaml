@@ -17,21 +17,22 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: futmarket-app
-    restart: always
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/futmarket
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: root
-    ports:
-      - "8080:8080"
+# DESCOMENTALO SI QUERÉS LEVANTAR LA APLICACIÓN JUNTO CON LA BASE DE DATOS EN DOCKER
+#  app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: futmarket-app
+#    restart: always
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/futmarket
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: root
+#    ports:
+#      - "8080:8080"
 
 volumes:
   postgres_data:

@@ -2,17 +2,18 @@ package com.ar.edu.unq.futmarket.model;
 
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "players")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Player {
 
     @Id
@@ -33,22 +34,40 @@ public class Player {
     private PlayerPosition playerPosition;
 
     @Transient
+    @Builder.Default
     private int issuedTokens = 100;
 
     @Column(nullable = false)
+    @Builder.Default
     private int availableTokens = 100;
 
     @Column(nullable = false, precision = 10, scale = 4)
+    @Builder.Default
     private BigDecimal currentTokenPrice = BigDecimal.ONE;
 
-    private double goals;
-    private double assists;
-    private double shots;
-    private double keyPasses;
-    private double dribbles;
-    private double tackles;
-    private double interceptions;
-    private double rating;
+    @Builder.Default
+    private double goals = 0;
+
+    @Builder.Default
+    private double assists = 0;
+
+    @Builder.Default
+    private double shots = 0;
+
+    @Builder.Default
+    private double keyPasses = 0;
+
+    @Builder.Default
+    private double dribbles = 0;
+
+    @Builder.Default
+    private double tackles = 0;
+
+    @Builder.Default
+    private double interceptions = 0;
+
+    @Builder.Default
+    private double rating = 0.0;
 
     @Column(unique = true)
     private Long externalId;
@@ -56,12 +75,8 @@ public class Player {
     @Version
     private Long version;
 
-    public Player(String name, String team, String league, PlayerPosition playerPosition) {
-        this.name = name;
-        this.team = team;
-        this.league = league;
-        this.playerPosition = playerPosition;
-    }
+    @Column(name = "last_stats_sync")
+    private LocalDateTime lastStatsSync;
 
     public void subAvailableTokens(int quantity) {
         if (quantity <= 0) {

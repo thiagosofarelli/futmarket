@@ -1,8 +1,16 @@
 package com.ar.edu.unq.futmarket.services;
 
-import org.springframework.stereotype.Service;
+import com.ar.edu.unq.futmarket.model.Order;
+import org.springframework.security.core.userdetails.UserDetails;
 
-@Service
-public class OrderService {
+import java.util.List;
+
+public interface OrderService {
+
+    public Order buy(UserDetails buyerDetails, Long playerId, int quantity);
+
+    public Order sell(UserDetails sellerDetails, Long playerId, int quantity);
+
+    public List<Order> getTransactionsByUserId(Long userId);
+
 }
-

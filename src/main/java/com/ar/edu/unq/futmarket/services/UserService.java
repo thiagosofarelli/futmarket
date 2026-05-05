@@ -1,8 +1,12 @@
 package com.ar.edu.unq.futmarket.services;
 
-import org.springframework.stereotype.Service;
+import com.ar.edu.unq.futmarket.model.User;
 
-@Service
-public class UserService {
+public interface UserService {
+
+    public User findById(Long id);
+
+    public User findByUsername(String username);
+
+    public User findSuperuser();
 }
-

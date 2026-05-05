@@ -1,9 +1,8 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -16,12 +15,15 @@ import java.math.RoundingMode;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Position {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "portfolio_id", nullable = false)
     private Portfolio portfolio;
@@ -33,6 +35,7 @@ public class Position {
     @Column(nullable = false)
     private int tokensAcquired;
 
+    @Builder.Default
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal averagePurchasePrice = BigDecimal.ZERO;
 

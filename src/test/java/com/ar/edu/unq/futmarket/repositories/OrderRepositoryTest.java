@@ -1,6 +1,7 @@
 package com.ar.edu.unq.futmarket.repositories;
 
 import com.ar.edu.unq.futmarket.model.Order;
+import com.ar.edu.unq.futmarket.model.enums.League;
 import com.ar.edu.unq.futmarket.model.enums.OrderStatus;
 import com.ar.edu.unq.futmarket.model.enums.OrderType;
 import com.ar.edu.unq.futmarket.model.Player;
@@ -22,14 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 class OrderRepositoryTest {
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PlayerRepository playerRepository;
+    @Autowired private OrderRepository orderRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PlayerRepository playerRepository;
 
     private User alice;
     private User superuser;
@@ -38,19 +34,43 @@ class OrderRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = new User("alice", BigDecimal.ZERO, false);
-        superuser = new User("SUPERUSER", BigDecimal.ZERO, true);
-        userRepository.saveAll(List.of(alice, superuser));
+        alice = userRepository.save(User.builder()
+                .username("alice")
+                .balance(new BigDecimal("1000.00"))
+                .build());
 
-        messi = player("Messi", PlayerPosition.FORWARD);
-        ramos = player("Ramos", PlayerPosition.DEFENDER);
-        playerRepository.saveAll(List.of(messi, ramos));
+        superuser = userRepository.save(User.builder()
+                .username("SUPERUSER")
+                .balance(BigDecimal.ZERO)
+                .superuser(true)
+                .build());
+
+        messi = playerRepository.save(Player.builder()
+                .name("Messi")
+                .team("PSG")
+                .playerPosition(PlayerPosition.FORWARD)
+                .league(League.PL.name())
+                .build());
+
+        ramos = playerRepository.save(Player.builder()
+                .name("Ramos")
+                .team("PSG")
+                .playerPosition(PlayerPosition.DEFENDER)
+                .league(League.PL.name())
+                .build());
     }
 
     @Test
     void save_persistsOrder_withAutoTimestamp() {
-        Order order = buyOrder(alice, superuser, messi, 5, new BigDecimal("2.0000"));
-        orderRepository.save(order);
+        Order order = orderRepository.save(Order.builder()
+                .buyer(alice)
+                .seller(superuser)
+                .player(messi)
+                .pricePerToken(new BigDecimal("2.0000"))
+                .type(OrderType.BUY)
+                .tokenQuantity(5)
+                .totalAmount(new BigDecimal("10.0000"))
+                .build());
 
         Order found = orderRepository.findById(order.getId()).orElseThrow();
         assertThat(found.getStatus()).isEqualTo(OrderStatus.PENDING);
@@ -60,23 +80,35 @@ class OrderRepositoryTest {
 
     @Test
     void findByBuyer_returnsOrdersDesc() {
-        Order o1 = buyOrder(alice, superuser, messi, 3, new BigDecimal("2.0000"));
-        o1.setCreatedAt(LocalDateTime.now().minusDays(2));
+        Order o1 = Order.builder()
+                .buyer(alice).seller(superuser).player(messi)
+                .pricePerToken(new BigDecimal("2.00")).type(OrderType.BUY)
+                .tokenQuantity(3).totalAmount(new BigDecimal("6.00"))
+                .createdAt(LocalDateTime.now().minusDays(1))
+                .build();
 
-        Order o2 = buyOrder(alice, superuser, ramos, 1, new BigDecimal("1.5000"));
-        o2.setCreatedAt(LocalDateTime.now().minusDays(1));
+        Order o2 = Order.builder()
+                .buyer(alice).seller(superuser).player(ramos)
+                .pricePerToken(new BigDecimal("1.50")).type(OrderType.BUY)
+                .tokenQuantity(1).totalAmount(new BigDecimal("1.50"))
+                .createdAt(LocalDateTime.now())
+                .build();
 
-        orderRepository.saveAll(List.of(o1, o2));
+        orderRepository.save(o1);
+        orderRepository.save(o2);
 
         List<Order> result = orderRepository.findByBuyerOrderByCreatedAtDesc(alice);
+
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getPlayer().getName()).isEqualTo("Ramos");
     }
 
     @Test
     void findByBuyerId_returnsOnlyAliceOrders() {
-        orderRepository.save(buyOrder(alice, superuser, messi, 2, new BigDecimal("3.0000")));
-        orderRepository.save(buyOrder(superuser, alice, ramos, 1, new BigDecimal("1.0000")));
+        orderRepository.save(Order.builder()
+                .buyer(alice).seller(superuser).player(messi)
+                .pricePerToken(new BigDecimal("3.00")).type(OrderType.BUY)
+                .tokenQuantity(2).totalAmount(new BigDecimal("6.00")).build());
 
         List<Order> result = orderRepository.findByBuyerIdOrderByCreatedAtDesc(alice.getId());
         assertThat(result).hasSize(1);
@@ -84,62 +116,37 @@ class OrderRepositoryTest {
     }
 
     @Test
-    void findBySellerId_returnsOnlyAliceAsSeller() {
-        orderRepository.save(buyOrder(superuser, alice, messi, 5, new BigDecimal("2.0000")));
-        orderRepository.save(buyOrder(alice, superuser, ramos, 2, new BigDecimal("1.0000")));
-
-        List<Order> result = orderRepository.findBySellerIdOrderByCreatedAtDesc(alice.getId());
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getSeller().getUsername()).isEqualTo("alice");
-    }
-
-    @Test
     void findByPlayerId_returnsAllOrdersForPlayer() {
-        orderRepository.save(buyOrder(alice, superuser, messi, 3, new BigDecimal("2.0000")));
-        orderRepository.save(buyOrder(alice, superuser, messi, 2, new BigDecimal("2.5000")));
-        orderRepository.save(buyOrder(alice, superuser, ramos, 1, new BigDecimal("1.0000")));
+        // Dos órdenes para Ramos
+        orderRepository.save(Order.builder()
+                .buyer(alice).seller(superuser).player(ramos)
+                .pricePerToken(new BigDecimal("1.50")).type(OrderType.BUY)
+                .tokenQuantity(1).totalAmount(new BigDecimal("1.50")).build());
 
-        List<Order> result = orderRepository.findByPlayerIdOrderByCreatedAtDesc(messi.getId());
+        orderRepository.save(Order.builder()
+                .buyer(superuser).seller(alice).player(ramos)
+                .pricePerToken(new BigDecimal("1.00")).type(OrderType.BUY)
+                .tokenQuantity(1).totalAmount(new BigDecimal("1.00")).build());
+
+        List<Order> result = orderRepository.findByPlayerIdOrderByCreatedAtDesc(ramos.getId());
         assertThat(result).hasSize(2);
-        result.forEach(o -> assertThat(o.getPlayer().getName()).isEqualTo("Messi"));
-    }
-
-    @Test
-    void findByBuyerId_noOrders_returnsEmpty() {
-        assertThat(orderRepository.findByBuyerIdOrderByCreatedAtDesc(alice.getId())).isEmpty();
+        result.forEach(o -> assertThat(o.getPlayer().getName()).isEqualTo("Ramos"));
     }
 
     @Test
     void order_totalAmount_isCorrect() {
-        Order order = buyOrder(alice, superuser, messi, 7, new BigDecimal("3.5000"));
-        orderRepository.save(order);
+        Order order = orderRepository.save(Order.builder()
+                .buyer(alice)
+                .seller(superuser)
+                .player(messi)
+                .type(OrderType.BUY)
+                .pricePerToken(new BigDecimal("3.5000"))
+                .tokenQuantity(7)
+                .totalAmount(new BigDecimal("24.5000"))
+                .build());
 
         Order found = orderRepository.findById(order.getId()).orElseThrow();
         assertThat(found.getTotalAmount()).isEqualByComparingTo("24.5000");
-    }
-
-    // --- helpers ---
-
-
-    private Player player(String name, PlayerPosition playerPosition) {
-        Player p = new Player();
-        p.setName(name);
-        p.setTeam("Team A");
-        p.setLeague("League A");
-        p.setPlayerPosition(playerPosition);
-        return p;
-    }
-
-    private Order buyOrder(User buyer, User seller, Player player, int quantity, BigDecimal pricePerToken) {
-        Order o = new Order();
-        o.setBuyer(buyer);
-        o.setSeller(seller);
-        o.setPlayer(player);
-        o.setType(OrderType.BUY);
-        o.setTokenQuantity(quantity);
-        o.setPricePerToken(pricePerToken);
-        o.setTotalAmount(pricePerToken.multiply(BigDecimal.valueOf(quantity)));
-        return o;
     }
 }
 

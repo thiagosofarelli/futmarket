@@ -1,8 +1,8 @@
 package com.ar.edu.unq.futmarket.services;
 
-import org.springframework.stereotype.Service;
+import com.ar.edu.unq.futmarket.model.Portfolio;
 
-@Service
-public class PortfolioService {
+public interface PortfolioService {
+
+    public Portfolio findByUserId(Long userId);
 }
-

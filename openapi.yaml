@@ -1,0 +1,778 @@
+openapi: 3.0.3
+info:
+  title: FutMarket API
+  description: REST API for FUTMARKET.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /auth/register:
+    post:
+      summary: User registration
+      description: Creates a user and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /auth/login:
+    post:
+      summary: Login
+      description: Validates credentials and returns a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /players:
+    get:
+      summary: Player list
+      description: Returns the player catalog with optional filters and pagination.
+      parameters:
+        - in: query
+          name: league
+          schema:
+            $ref: '#/components/schemas/League'
+          description: Filter by league.
+        - in: query
+          name: team
+          schema:
+            type: string
+          description: Filter by team.
+        - in: query
+          name: playerPosition
+          schema:
+            $ref: '#/components/schemas/PlayerPosition'
+          description: Filter by position.
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-indexed).
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page.
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: name
+          description: Field to sort by (e.g., name, currentTokenPrice).
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagePlayerDTO'
+  /players/ranking:
+    get:
+      summary: Player ranking
+      description: Returns the ranking based on current price.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayerDTO'
+  /players/{id}:
+    get:
+      summary: Player details
+      description: Returns full player details by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Player ID.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerDTO'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /players/{id}/quotes:
+    get:
+      summary: Quote history
+      description: Returns historical quotes for a player.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Player ID.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Quote'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /players/sync:
+    post:
+      summary: Sync players
+      description: Syncs players from the external provider.
+      responses:
+        '200':
+          description: OK
+  /players/stats/sync:
+    post:
+      summary: Sync stats for all leagues
+      description: Syncs player stats for all supported leagues.
+      responses:
+        '202':
+          description: Accepted
+  /players/stats/sync/{league}:
+    post:
+      summary: Sync stats by league
+      description: Syncs player stats for a specific league.
+      parameters:
+        - in: path
+          name: league
+          required: true
+          schema:
+            $ref: '#/components/schemas/League'
+      responses:
+        '202':
+          description: Accepted
+  /quotes/recalculate:
+    post:
+      summary: Recalculate quotes
+      description: Runs a manual quote recalculation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecalculateRequest'
+      responses:
+        '200':
+          description: OK
+  /quotes/player/{playerId}:
+    get:
+      summary: Quotes by player
+      description: Returns quotes for a player.
+      parameters:
+        - in: path
+          name: playerId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuoteDTO'
+  /orders/buy:
+    post:
+      summary: Buy tokens
+      description: Buys player tokens (authenticated user).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuyRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDTO'
+        '400':
+          description: Invalid request or insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /orders/sell:
+    post:
+      summary: Sell tokens
+      description: Sells player tokens (authenticated user).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SellRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDTO'
+        '400':
+          description: Invalid request or insufficient tokens
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /orders/user/{userId}:
+    get:
+      summary: Transaction history
+      description: Lists a user's orders.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderDTO'
+  /portfolios/user/{userId}:
+    get:
+      summary: Portfolio by user
+      description: Returns the current portfolio for a user.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioDTO'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users/{id}:
+    get:
+      summary: User details
+      description: Returns a user by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users/{id}/portfolio:
+    get:
+      summary: User portfolio
+      description: Returns the user's portfolio.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users/{id}/transactions:
+    get:
+      summary: Transaction history
+      description: Lists a user's orders.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+components:
+  schemas:
+    League:
+      type: string
+      enum: [PL, PD, FL1, BL1, SA]
+    PlayerPosition:
+      type: string
+      enum: [FORWARD, MIDFIELDER, DEFENDER, GOALKEEPER]
+    OrderType:
+      type: string
+      enum: [BUY, SELL]
+    OrderStatus:
+      type: string
+      enum: [PENDING, COMPLETED, FAILED]
+    ValuationStrategy:
+      type: string
+      enum: [GENERAL_PERFORMANCE, POSITION_WEIGHTED]
+    PagePlayerDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerDTO'
+          description: List of players for the current page.
+        totalPages:
+          type: integer
+          description: Total number of pages.
+        totalElements:
+          type: integer
+          description: Total number of elements.
+        currentPage:
+          type: integer
+          description: Current page number (0-indexed).
+        pageSize:
+          type: integer
+          description: Number of elements per page.
+        hasNext:
+          type: boolean
+          description: Whether there is a next page.
+        hasPrevious:
+          type: boolean
+          description: Whether there is a previous page.
+      required: [content, totalPages, totalElements, currentPage, pageSize, hasNext, hasPrevious]
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    BuyRequest:
+      type: object
+      properties:
+        playerId:
+          type: integer
+        quantity:
+          type: integer
+      required: [playerId, quantity]
+    SellRequest:
+      type: object
+      properties:
+        playerId:
+          type: integer
+        quantity:
+          type: integer
+      required: [playerId, quantity]
+    RecalculateRequest:
+      type: object
+      properties:
+        strategy:
+          $ref: '#/components/schemas/ValuationStrategy'
+      required: [strategy]
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+      required: [token]
+    PlayerDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        league:
+          type: string
+          description: League full name.
+        team:
+          type: string
+        playerPosition:
+          $ref: '#/components/schemas/PlayerPosition'
+        currentTokenPrice:
+          type: number
+          format: double
+        goals:
+          type: number
+          format: double
+        assists:
+          type: number
+          format: double
+        shots:
+          type: number
+          format: double
+        keyPasses:
+          type: number
+          format: double
+        dribbles:
+          type: number
+          format: double
+        tackles:
+          type: number
+          format: double
+        interceptions:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+        availableTokens:
+          type: integer
+        lastStatsSync:
+          type: string
+          format: date-time
+          nullable: true
+        externalId:
+          type: string
+      required: [id, name, league, team, playerPosition, currentTokenPrice, availableTokens]
+    QuoteDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerId:
+          type: integer
+        currentTokenPrice:
+          type: number
+          format: double
+        strategy:
+          $ref: '#/components/schemas/ValuationStrategy'
+        score:
+          type: number
+          format: double
+        calculatedAt:
+          type: string
+          format: date-time
+      required: [id, playerId, currentTokenPrice, strategy, score, calculatedAt]
+    OrderDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        buyerId:
+          type: integer
+        sellerId:
+          type: integer
+        playerId:
+          type: integer
+        type:
+          $ref: '#/components/schemas/OrderType'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        tokenQuantity:
+          type: integer
+        pricePerToken:
+          type: number
+          format: double
+        totalAmount:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, buyerId, sellerId, playerId, type, status, tokenQuantity, pricePerToken, totalAmount, createdAt]
+    PositionDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerId:
+          type: integer
+        tokensAcquired:
+          type: integer
+        averagePurchasePrice:
+          type: number
+          format: double
+        currentValue:
+          type: number
+          format: double
+        profitLoss:
+          type: number
+          format: double
+      required: [id, playerId, tokensAcquired, averagePurchasePrice, currentValue, profitLoss]
+    PortfolioDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositionDTO'
+        currentValue:
+          type: number
+          format: double
+        profitLoss:
+          type: number
+          format: double
+      required: [id, userId, positions, currentValue, profitLoss]
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        balance:
+          type: number
+          format: double
+        superuser:
+          type: boolean
+        portfolio:
+          $ref: '#/components/schemas/PortfolioDTO'
+      required: [id, username, balance, superuser]
+    Player:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        team:
+          type: string
+        league:
+          type: string
+        playerPosition:
+          $ref: '#/components/schemas/PlayerPosition'
+        issuedTokens:
+          type: integer
+        availableTokens:
+          type: integer
+        currentTokenPrice:
+          type: number
+          format: double
+        goals:
+          type: number
+          format: double
+        assists:
+          type: number
+          format: double
+        shots:
+          type: number
+          format: double
+        keyPasses:
+          type: number
+          format: double
+        dribbles:
+          type: number
+          format: double
+        tackles:
+          type: number
+          format: double
+        interceptions:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+        externalId:
+          type: integer
+      required: [id, name, team, league, playerPosition, availableTokens, currentTokenPrice]
+    Quote:
+      type: object
+      properties:
+        id:
+          type: integer
+        player:
+          $ref: '#/components/schemas/Player'
+        currentTokenPrice:
+          type: number
+          format: double
+        strategy:
+          $ref: '#/components/schemas/ValuationStrategy'
+        score:
+          type: number
+          format: double
+        calculatedAt:
+          type: string
+          format: date-time
+      required: [id, player, currentTokenPrice, strategy, score, calculatedAt]
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        portfolio:
+          $ref: '#/components/schemas/Portfolio'
+        balance:
+          type: number
+          format: double
+        superuser:
+          type: boolean
+      required: [id, username, balance, superuser]
+    Portfolio:
+      type: object
+      properties:
+        id:
+          type: integer
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+        currentValue:
+          type: number
+          format: double
+        profitLoss:
+          type: number
+          format: double
+      required: [id, positions, currentValue, profitLoss]
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+        player:
+          $ref: '#/components/schemas/Player'
+        tokensAcquired:
+          type: integer
+        averagePurchasePrice:
+          type: number
+          format: double
+        currentValue:
+          type: number
+          format: double
+        profitLoss:
+          type: number
+          format: double
+      required: [id, player, tokensAcquired, averagePurchasePrice, currentValue, profitLoss]
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        buyer:
+          $ref: '#/components/schemas/User'
+        seller:
+          $ref: '#/components/schemas/User'
+        player:
+          $ref: '#/components/schemas/Player'
+        type:
+          $ref: '#/components/schemas/OrderType'
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        tokenQuantity:
+          type: integer
+        pricePerToken:
+          type: number
+          format: double
+        totalAmount:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required: [id, buyer, seller, player, type, status, tokenQuantity, pricePerToken, totalAmount, createdAt]
+    ApiError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+          nullable: true
+      required: [timestamp, status, error, message]

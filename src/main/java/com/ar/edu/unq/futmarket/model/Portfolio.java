@@ -1,10 +1,9 @@
 package com.ar.edu.unq.futmarket.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -16,15 +15,19 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Portfolio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "portfolio")
     private User user;
 
+    @Builder.Default
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Position> positions = new ArrayList<>();
 
@@ -88,7 +91,6 @@ public class Portfolio {
                 .orElseThrow(() -> new IllegalArgumentException("The portfolio does not have a position."));
 
         position.registerSell(tokensQuantity);
-        user.addBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
 
         if (position.getTokensAcquired() == 0) {
             positions.remove(position);
