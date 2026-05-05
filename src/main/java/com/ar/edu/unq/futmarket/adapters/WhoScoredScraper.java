@@ -41,7 +41,9 @@ public class WhoScoredScraper {
 
         WebDriver driver = createDriver();
         try {
+            driver.get(BASE_URL);
             dismissCookieBanner(driver);
+
             for (Player player : players) {
                 try {
                     scrapeAndUpdate(driver, player);
@@ -69,11 +71,19 @@ public class WhoScoredScraper {
             playerLinks = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
                     By.cssSelector("table tbody tr td a[href*='/players/']")));
         } catch (TimeoutException e) {
-            log.debug("No search results for player: {}", player.getName());
+            log.info("No search results for player: {}", player.getName());
+
+            player.setLastStatsSync(LocalDateTime.now());
+            playerRepository.save(player);
+
             return;
         }
 
-        if (playerLinks.isEmpty()) return;
+        if (playerLinks.isEmpty()) {
+            player.setLastStatsSync(LocalDateTime.now());
+            playerRepository.save(player);
+            return;
+        }
 
         String playerPageUrl = playerLinks.get(0).getAttribute("href");
         driver.get(playerPageUrl);
@@ -93,7 +103,7 @@ public class WhoScoredScraper {
                 player.setInterceptions(interceptions);
             }
         } catch (Exception e) {
-            log.debug("Defensive stats not found for player: {}", player.getName());
+            log.info("Defensive stats not found for player: {}", player.getName());
         }
 
         // --- OFFENSIVE STATS ---
@@ -120,12 +130,17 @@ public class WhoScoredScraper {
 
             }
         } catch (Exception e) {
-            log.debug("Offensive stats not found for player: {}", player.getName());
+            log.info("Offensive stats not found for player: {}", player.getName());
         }
 
         player.setLastStatsSync(LocalDateTime.now());
         playerRepository.save(player);
-        log.info("Stats updated for player: {}", player.getName());
+        log.info("Stats updated for {}: Goals={}, Rating={}, Tackles={}, LastSync={}",
+                player.getName(),
+                player.getGoals(),
+                player.getRating(),
+                player.getTackles(),
+                player.getLastStatsSync());
     }
 
     private void clickTab(WebDriver driver, WebDriverWait wait, String tabName) {
@@ -166,26 +181,40 @@ public class WhoScoredScraper {
     }
 
     private void dismissCookieBanner(WebDriver driver) {
+        // Wait until 20 seconds for cookies banner to appear.
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
         try {
-            WebDriverWait wait = createWait(driver);
+            log.info("Esperando banner de cookies (máximo 20s)...");
 
-            WebElement acceptBtn = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[normalize-space()='Aceptar todo']")
-            ));
+            By acceptBtnSelector = By.xpath("//button[contains(text(), 'Aceptar todo')]");
 
-            try {
-                acceptBtn.click();
-                log.info("Banner de cookies cerrado (Clic normal).");
-            } catch (ElementClickInterceptedException e) {
-                JavascriptExecutor js = (JavascriptExecutor) driver;
-                js.executeScript("arguments[0].click();", acceptBtn);
-                log.info("Banner de cookies cerrado (Javascript).");
-            }
+            WebElement acceptBtn = longWait.until(ExpectedConditions.elementToBeClickable(acceptBtnSelector));
 
-            Thread.sleep(delayMillis);
+            js.executeScript("arguments[0].click();", acceptBtn);
+            log.info("Banner de cookies aceptado.");
 
         } catch (TimeoutException e) {
-            log.debug("No apareció el banner de cookies o ya estaba aceptado.");
+            log.warn("Applying force delete on elements.");
+            js.executeScript("""
+            var selectors = ['.bfFlMV', '[class*="Card-buoy"]', '.qc-cmp2-container'];
+            selectors.forEach(s => {
+                var el = document.querySelector(s);
+                if(el) el.remove();
+            });
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        """);
+        }
+        sleepQuietly(2000);
+    }
+
+
+
+    private void sleepQuietly(long millis) {
+        try {
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
