@@ -45,7 +45,7 @@ public class WhoScoredScraper {
             for (Player player : players) {
                 try {
                     scrapeAndUpdate(driver, player);
-                    Thread.sleep(delayMillis);
+                    sleepBetweenPlayers();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
@@ -62,7 +62,7 @@ public class WhoScoredScraper {
         String searchUrl = BASE_URL + "/Search/?t=" + encodeURL(player.getName());
         driver.get(searchUrl);
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = createWait(driver);
 
         List<WebElement> playerLinks;
         try {
@@ -167,7 +167,7 @@ public class WhoScoredScraper {
 
     private void dismissCookieBanner(WebDriver driver) {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = createWait(driver);
 
             WebElement acceptBtn = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[normalize-space()='Aceptar todo']")
@@ -182,7 +182,7 @@ public class WhoScoredScraper {
                 log.info("Banner de cookies cerrado (Javascript).");
             }
 
-            Thread.sleep(1000);
+            Thread.sleep(delayMillis);
 
         } catch (TimeoutException e) {
             log.debug("No apareció el banner de cookies o ya estaba aceptado.");
@@ -191,7 +191,7 @@ public class WhoScoredScraper {
         }
     }
 
-    private double parseDouble(String text) {
+    double parseDouble(String text) {
         if (text == null || text.isBlank()) return 0.0;
         try {
             return Double.parseDouble(text.replaceAll("[^0-9.]", ""));
@@ -200,7 +200,7 @@ public class WhoScoredScraper {
         }
     }
 
-    private String encodeURL(String text) {
+    String encodeURL(String text) {
         if (text == null) return "";
         return text.replace(" ", "%20")
                 .replace("á", "%C3%A1").replace("é", "%C3%A9")
@@ -208,7 +208,15 @@ public class WhoScoredScraper {
                 .replace("ú", "%C3%FA").replace("ñ", "%C3%B1");
     }
 
-    private WebDriver createDriver() {
+    void sleepBetweenPlayers() throws InterruptedException {
+        Thread.sleep(delayMillis);
+    }
+
+    WebDriverWait createWait(WebDriver driver) {
+        return new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+    WebDriver createDriver() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
         // options.addArguments("--headless=new");
