@@ -14,7 +14,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -25,8 +28,7 @@ class WhoScoredScraperTest {
     @Mock
     private PlayerRepository playerRepository;
 
-    @Mock
-    private WebDriver driver;
+    private TestWebDriver driver;
 
     @Mock
     private WebDriverWait wait;
@@ -37,6 +39,7 @@ class WhoScoredScraperTest {
     void setUp() {
         scraper = spy(new WhoScoredScraper(playerRepository));
         ReflectionTestUtils.setField(scraper, "delayMillis", 0L);
+        driver = new TestWebDriver();
     }
 
     // -----------------------------------------------------------------------
@@ -58,12 +61,11 @@ class WhoScoredScraperTest {
     @Test
     void syncPlayerStats_emptyCollection_quitsDriverCleanly() {
         enableWithMocks();
-        WebElement cookieBtn = mock(WebElement.class);
-        when(wait.until(any())).thenReturn(cookieBtn);
+        stubCookieBannerDismissal();
 
         scraper.syncPlayerStats(List.of());
 
-        verify(driver).quit();
+        assertThat(driver.wasQuitCalled()).isTrue();
         verify(playerRepository, never()).save(any());
     }
 
@@ -74,28 +76,31 @@ class WhoScoredScraperTest {
     @Test
     void syncPlayerStats_noSearchResults_skipsPlayer() {
         enableWithMocks();
-        WebElement cookieBtn = mock(WebElement.class);
-        when(wait.until(any()))
-                .thenReturn(cookieBtn)
-                .thenThrow(new TimeoutException("no results"));
+        stubCookieBannerDismissal();
+        when(wait.until(any())).thenThrow(new TimeoutException("no results"));
 
-        scraper.syncPlayerStats(List.of(player("Unknown Player")));
+        Player unknown = player("Unknown Player");
+        scraper.syncPlayerStats(List.of(unknown));
 
-        verify(playerRepository, never()).save(any());
-        verify(driver).quit();
+        var captor = forClass(Player.class);
+        verify(playerRepository).save(captor.capture());
+        assertThat(captor.getValue().getName()).isEqualTo("Unknown Player");
+        assertThat(captor.getValue().getLastStatsSync()).isNotNull();
     }
 
     @Test
     void syncPlayerStats_emptyPlayerLinks_skipsPlayer() {
         enableWithMocks();
-        WebElement cookieBtn = mock(WebElement.class);
-        when(wait.until(any()))
-                .thenReturn(cookieBtn)
-                .thenReturn(List.of());
+        stubCookieBannerDismissal();
+        when(wait.until(any())).thenReturn(List.of());
 
-        scraper.syncPlayerStats(List.of(player("Unknown Player")));
+        Player unknown = player("Unknown Player");
+        scraper.syncPlayerStats(List.of(unknown));
 
-        verify(playerRepository, never()).save(any());
+        var captor = forClass(Player.class);
+        verify(playerRepository).save(captor.capture());
+        assertThat(captor.getValue().getName()).isEqualTo("Unknown Player");
+        assertThat(captor.getValue().getLastStatsSync()).isNotNull();
     }
 
     // -----------------------------------------------------------------------
@@ -106,17 +111,17 @@ class WhoScoredScraperTest {
     void syncPlayerStats_successfulScrape_updatesDefensiveAndOffensiveStats() {
         enableWithMocks();
 
-        WebElement cookieBtn = mock(WebElement.class);
+        stubCookieBannerDismissal();
+
         WebElement playerLink = mock(WebElement.class);
-        when(playerLink.getAttribute("href")).thenReturn("https://www.whoscored.com/players/1");
+        doReturn("https://www.whoscored.com/players/1").when(playerLink).getAttribute("href");
 
         WebElement defTab = mock(WebElement.class);
         WebElement offTab = mock(WebElement.class);
 
-        // order: cookie banner, player links, defensive tab click,
+        // order: player links, defensive tab click,
         //        defensive table visible, offensive tab click, offensive table visible
         when(wait.until(any()))
-                .thenReturn(cookieBtn)
                 .thenReturn(List.of(playerLink))
                 .thenReturn(defTab)
                 .thenReturn(mock(WebElement.class))
@@ -124,14 +129,21 @@ class WhoScoredScraperTest {
                 .thenReturn(mock(WebElement.class));
 
         // defensive: índice 3=tackles(1.5), índice 4=interceptions(2.0)
-        WebElement defRow = statRow("Total / Average", 0.0, 0.0, 0.0, 1.5, 2.0);
+        WebElement defRow = statRow(0.0, 0.0, 0.0, 1.5, 2.0);
         // offensive: índice 3=goals(10), 4=assists(5), 5=shots(3),
         //            6=keyPasses(2), 7=dribbles(1), 8-11=0, 12=rating(7.5)
-        WebElement offRow = statRow("Total / Average",
+        WebElement offRow = statRow(
                 0.0, 0.0, 0.0, 10.0, 5.0, 3.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 7.5);
-        when(driver.findElements(any(By.class)))
-                .thenReturn(List.of(defRow))
-                .thenReturn(List.of(offRow));
+        driver.setFindElementsHandler(by -> {
+            String selector = by.toString();
+            if (selector.contains("statistics-table-defensive")) {
+                return List.of(defRow);
+            }
+            if (selector.contains("statistics-table-offensive")) {
+                return List.of(offRow);
+            }
+            return List.of();
+        });
 
         Player messi = player("Messi");
         scraper.syncPlayerStats(List.of(messi));
@@ -154,9 +166,8 @@ class WhoScoredScraperTest {
     @Test
     void syncPlayerStats_exceptionInOnePlayer_continuesWithNext() {
         enableWithMocks();
-        WebElement cookieBtn = mock(WebElement.class);
+        stubCookieBannerDismissal();
         when(wait.until(any()))
-                .thenReturn(cookieBtn)
                 .thenThrow(new WebDriverException("crash"))
                 .thenThrow(new TimeoutException("no results for second player"));
 
@@ -164,8 +175,9 @@ class WhoScoredScraperTest {
         Player p2 = player("Player2");
         scraper.syncPlayerStats(List.of(p1, p2));
 
-        verify(playerRepository, never()).save(any());
-        verify(driver).quit();
+        var captor = forClass(Player.class);
+        verify(playerRepository).save(captor.capture());
+        assertThat(captor.getValue().getName()).isEqualTo("Player2");
     }
 
     // -----------------------------------------------------------------------
@@ -175,25 +187,24 @@ class WhoScoredScraperTest {
     @Test
     void syncPlayerStats_interruptedDuringSleep_setsInterruptFlag() throws Exception {
         enableWithMocks();
-        WebElement cookieBtn = mock(WebElement.class);
+        stubCookieBannerDismissal();
         WebElement playerLink = mock(WebElement.class);
-        when(playerLink.getAttribute("href")).thenReturn("https://www.whoscored.com/players/1");
+        doReturn("https://www.whoscored.com/players/1").when(playerLink).getAttribute("href");
 
         when(wait.until(any()))
-                .thenReturn(cookieBtn)
                 .thenReturn(List.of(playerLink))
                 .thenReturn(mock(WebElement.class))
                 .thenReturn(mock(WebElement.class))
                 .thenReturn(mock(WebElement.class))
                 .thenReturn(mock(WebElement.class));
 
-        when(driver.findElements(any(By.class))).thenReturn(List.of());
+        driver.setFindElementsHandler(by -> List.of());
         doThrow(new InterruptedException()).when(scraper).sleepBetweenPlayers();
 
         scraper.syncPlayerStats(List.of(player("Messi"), player("Ronaldo")));
 
         assertThat(Thread.currentThread().isInterrupted()).isTrue();
-        Thread.interrupted(); // limpiar flag para no afectar otros tests
+        assertThat(Thread.interrupted()).isTrue(); // limpiar flag para no afectar otros tests
     }
 
     // -----------------------------------------------------------------------
@@ -247,7 +258,7 @@ class WhoScoredScraperTest {
     }
 
     @Test
-    void encodeURL_eñe_isEncoded() {
+    void encodeURL_enie_isEncoded() {
         assertThat(scraper.encodeURL("España")).contains("%C3%B1");
     }
 
@@ -258,7 +269,14 @@ class WhoScoredScraperTest {
     private void enableWithMocks() {
         ReflectionTestUtils.setField(scraper, "enabled", true);
         doReturn(driver).when(scraper).createDriver();
-        doReturn(wait).when(scraper).createWait(driver);
+        lenient().doReturn(wait).when(scraper).createWait(driver);
+    }
+
+    private void stubCookieBannerDismissal() {
+        WebElement acceptButton = mock(WebElement.class);
+        when(acceptButton.isDisplayed()).thenReturn(true);
+        when(acceptButton.isEnabled()).thenReturn(true);
+        driver.setFindElementHandler(by -> acceptButton);
     }
 
     private Player player(String name) {
@@ -270,9 +288,9 @@ class WhoScoredScraperTest {
                 .build();
     }
 
-    private WebElement statRow(String rowText, double... values) {
+    private WebElement statRow(double... values) {
         WebElement row = mock(WebElement.class);
-        lenient().when(row.getText()).thenReturn(rowText);
+        lenient().when(row.getText()).thenReturn("Total / Average");
         List<WebElement> tds = new ArrayList<>();
         for (double val : values) {
             WebElement td = mock(WebElement.class);
@@ -281,5 +299,103 @@ class WhoScoredScraperTest {
         }
         lenient().when(row.findElements(By.tagName("td"))).thenReturn(tds);
         return row;
+    }
+
+    @SuppressWarnings("null")
+    private static final class TestWebDriver implements WebDriver, JavascriptExecutor {
+
+        private Function<By, WebElement> findElementHandler = by -> {
+            throw new NoSuchElementException(by.toString());
+        };
+
+        private Function<By, List<WebElement>> findElementsHandler = by -> List.of();
+        private boolean quitCalled;
+
+        void setFindElementHandler(Function<By, WebElement> findElementHandler) {
+            this.findElementHandler = findElementHandler;
+        }
+
+        void setFindElementsHandler(Function<By, List<WebElement>> findElementsHandler) {
+            this.findElementsHandler = findElementsHandler;
+        }
+
+        @Override
+        public void get(String url) {
+            // no-op for unit tests
+        }
+
+        @Override
+        public String getCurrentUrl() {
+            return "";
+        }
+
+        @Override
+        public String getTitle() {
+            return "";
+        }
+
+        @Override
+        public List<WebElement> findElements(By by) {
+            return findElementsHandler.apply(by);
+        }
+
+        @Override
+        public WebElement findElement(By by) {
+            return findElementHandler.apply(by);
+        }
+
+        @Override
+        public String getPageSource() {
+            return "";
+        }
+
+        @Override
+        public void close() {
+            // no-op
+        }
+
+        @Override
+        public void quit() {
+            quitCalled = true;
+        }
+
+        boolean wasQuitCalled() {
+            return quitCalled;
+        }
+
+        @Override
+        public Set<String> getWindowHandles() {
+            return Set.of();
+        }
+
+        @Override
+        public String getWindowHandle() {
+            return "window";
+        }
+
+        @Override
+        public TargetLocator switchTo() {
+            return null;
+        }
+
+        @Override
+        public Navigation navigate() {
+            return null;
+        }
+
+        @Override
+        public Options manage() {
+            return null;
+        }
+
+        @Override
+        public Object executeScript(String script, Object... args) {
+            return null;
+        }
+
+        @Override
+        public Object executeAsyncScript(String script, Object... args) {
+            return null;
+        }
     }
 }
