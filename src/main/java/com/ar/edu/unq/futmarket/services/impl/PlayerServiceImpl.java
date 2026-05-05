@@ -9,6 +9,8 @@ import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.services.PlayerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -39,18 +41,18 @@ public class PlayerServiceImpl implements PlayerService {
                 .orElseThrow(PlayerNotFoundException::new);
     }
 
-    public List<Player> findByFilters(League league, String team, PlayerPosition position) {
+    public Page<Player> findByFilters(League league, String team, PlayerPosition position, Pageable pageable) {
         String leagueName = league != null ? league.getFullName() : null;
         String normalizedTeam = normalizeText(team);
 
-        if (leagueName != null && normalizedTeam != null && position != null) return playerRepository.findPlayersByLeagueAndTeamAndPlayerPosition(leagueName, normalizedTeam, position);
-        if (leagueName != null && position != null) return playerRepository.findPlayersByLeagueAndPlayerPosition(leagueName, position);
-        if (leagueName != null && normalizedTeam != null) return playerRepository.findPlayersByLeagueAndTeam(leagueName, normalizedTeam);
-        if (normalizedTeam != null && position != null) return playerRepository.findPlayersByTeamAndPlayerPosition(normalizedTeam, position);
-        if (leagueName != null) return playerRepository.findPlayersByLeague(leagueName);
-        if (normalizedTeam != null) return playerRepository.findPlayersByTeam(normalizedTeam);
-        if (position != null) return playerRepository.findPlayersByPlayerPosition(position);
-        return playerRepository.findAll();
+        if (leagueName != null && normalizedTeam != null && position != null) return playerRepository.findPlayersByLeagueAndTeamAndPlayerPosition(leagueName, normalizedTeam, position, pageable);
+        if (leagueName != null && position != null) return playerRepository.findPlayersByLeagueAndPlayerPosition(leagueName, position, pageable);
+        if (leagueName != null && normalizedTeam != null) return playerRepository.findPlayersByLeagueAndTeam(leagueName, normalizedTeam, pageable);
+        if (normalizedTeam != null && position != null) return playerRepository.findPlayersByTeamAndPlayerPosition(normalizedTeam, position, pageable);
+        if (leagueName != null) return playerRepository.findPlayersByLeague(leagueName, pageable);
+        if (normalizedTeam != null) return playerRepository.findPlayersByTeam(normalizedTeam, pageable);
+        if (position != null) return playerRepository.findPlayersByPlayerPosition(position, pageable);
+        return playerRepository.findAll(pageable);
     }
 
     private String normalizeText(String value) {

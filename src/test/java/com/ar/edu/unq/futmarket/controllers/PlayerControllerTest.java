@@ -15,6 +15,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -57,27 +60,29 @@ class PlayerControllerTest {
     }
 
     @Test
-    void getPlayers_noFilters_returns200WithList() throws Exception {
-        when(playerService.findByFilters(null, null, null)).thenReturn(List.of(buildPlayer("Haaland")));
+    void getPlayers_noFilters_returns200WithPage() throws Exception {
+        when(playerService.findByFilters(isNull(), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(buildPlayer("Haaland"))));
 
         mockMvc.perform(get("/players"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value("Haaland"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value("Haaland"))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
     void getPlayers_withFilters_callsServiceWithCorrectFilters() throws Exception {
-        when(playerService.findByFilters(League.PL, null, PlayerPosition.FORWARD))
-                .thenReturn(List.of(buildPlayer("Haaland")));
+        when(playerService.findByFilters(eq(League.PL), isNull(), eq(PlayerPosition.FORWARD), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(buildPlayer("Haaland"))));
 
         mockMvc.perform(get("/players")
                         .param("league", "PL")
                         .param("playerPosition", "FORWARD"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.content.length()").value(1));
 
-        verify(playerService).findByFilters(League.PL, null, PlayerPosition.FORWARD);
+        verify(playerService).findByFilters(eq(League.PL), isNull(), eq(PlayerPosition.FORWARD), any(Pageable.class));
     }
 
     @Test

@@ -1,12 +1,14 @@
 package com.ar.edu.unq.futmarket.controllers;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.ar.edu.unq.futmarket.model.enums.League;
 import com.ar.edu.unq.futmarket.services.PlayerService;
 import com.ar.edu.unq.futmarket.services.QuoteService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,23 +34,21 @@ public class PlayerController {
     private final ModelMapper modelMapper;
 
     @GetMapping
-    public ResponseEntity<List<PlayerDTO>> getPlayers(
+    public ResponseEntity<Page<PlayerDTO>> getPlayers(
             @RequestParam(required = false) League league,
             @RequestParam(required = false) String team,
-            @RequestParam(required = false) PlayerPosition playerPosition) {
-        List<Player> players = playerService.findByFilters(league, team, playerPosition);
-        List<PlayerDTO> dtos = players.stream()
-                .map(player -> modelMapper.map(player, PlayerDTO.class))
-                .collect(Collectors.toList());
+            @RequestParam(required = false) PlayerPosition playerPosition,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<PlayerDTO> dtos = playerService.findByFilters(league, team, playerPosition, pageable)
+                .map(player -> modelMapper.map(player, PlayerDTO.class));
         return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/ranking")
     public ResponseEntity<List<PlayerDTO>> getRanking() {
-        List<Player> players = playerService.getRanking();
-        List<PlayerDTO> dtos = players.stream()
+        List<PlayerDTO> dtos = playerService.getRanking().stream()
                 .map(player -> modelMapper.map(player, PlayerDTO.class))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(dtos);
     }
 

@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -82,14 +84,16 @@ class PlayerServiceImplTest {
                 .isInstanceOf(PlayerNotFoundException.class);
     }
 
+    private static final Pageable ALL = PageRequest.of(0, 100);
+
     @Test
     void findByFilters_noFilters_returnsAll() {
-        assertThat(playerService.findByFilters(null, null, null)).hasSize(4);
+        assertThat(playerService.findByFilters(null, null, null, ALL).getContent()).hasSize(4);
     }
 
     @Test
     void findByFilters_byLeague_returnsMatchingPlayers() {
-        List<Player> result = playerService.findByFilters(League.PL, null, null);
+        List<Player> result = playerService.findByFilters(League.PL, null, null, ALL).getContent();
         assertThat(result).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Haaland", "Saliba");
@@ -97,7 +101,7 @@ class PlayerServiceImplTest {
 
     @Test
     void findByFilters_byTeam_returnsMatchingPlayers() {
-        List<Player> result = playerService.findByFilters(null, "Inter", null);
+        List<Player> result = playerService.findByFilters(null, "Inter", null, ALL).getContent();
         assertThat(result).hasSize(1)
                 .extracting(Player::getName)
                 .containsExactly("Lautaro");
@@ -105,7 +109,7 @@ class PlayerServiceImplTest {
 
     @Test
     void findByFilters_byPosition_returnsMatchingPlayers() {
-        List<Player> result = playerService.findByFilters(null, null, PlayerPosition.FORWARD);
+        List<Player> result = playerService.findByFilters(null, null, PlayerPosition.FORWARD, ALL).getContent();
         assertThat(result).hasSize(2)
                 .extracting(Player::getName)
                 .containsExactlyInAnyOrder("Haaland", "Lautaro");
@@ -113,7 +117,7 @@ class PlayerServiceImplTest {
 
     @Test
     void findByFilters_byLeagueAndTeam_narrowsDown() {
-        List<Player> result = playerService.findByFilters(League.PL, "Arsenal FC", null);
+        List<Player> result = playerService.findByFilters(League.PL, "Arsenal FC", null, ALL).getContent();
         assertThat(result).hasSize(1)
                 .extracting(Player::getName)
                 .containsExactly("Saliba");
@@ -121,7 +125,7 @@ class PlayerServiceImplTest {
 
     @Test
     void findByFilters_byLeagueAndPosition_narrowsDown() {
-        List<Player> result = playerService.findByFilters(League.PL, null, PlayerPosition.DEFENDER);
+        List<Player> result = playerService.findByFilters(League.PL, null, PlayerPosition.DEFENDER, ALL).getContent();
         assertThat(result).hasSize(1)
                 .extracting(Player::getName)
                 .containsExactly("Saliba");
@@ -129,7 +133,7 @@ class PlayerServiceImplTest {
 
     @Test
     void findByFilters_unknownLeague_returnsEmpty() {
-        assertThat(playerService.findByFilters(League.BL1, null, null)).isEmpty();
+        assertThat(playerService.findByFilters(League.BL1, null, null, ALL).getContent()).isEmpty();
     }
 
     @Test
