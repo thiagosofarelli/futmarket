@@ -1,5 +1,13 @@
 package com.ar.edu.unq.futmarket.services.impl;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.ar.edu.unq.futmarket.controllers.response.BootstrapResponse;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.User;
@@ -12,22 +20,16 @@ import com.ar.edu.unq.futmarket.repositories.UserRepository;
 import com.ar.edu.unq.futmarket.services.BootstrapService;
 import com.ar.edu.unq.futmarket.services.OrderService;
 import com.ar.edu.unq.futmarket.services.QuoteService;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class BootstrapServiceImpl implements BootstrapService {
 
     private static final String SUPERUSER_USERNAME = "SUPERUSER";
-    private static final String SUPERUSER_PASSWORD = "superuser123";
-    private static final String DEMO_PASSWORD = "demo1234";
+    private static final String ALICE_USERNAME = "alice";
 
     private final UserRepository userRepository;
     private final PlayerRepository playerRepository;
@@ -36,6 +38,12 @@ public class BootstrapServiceImpl implements BootstrapService {
     private final QuoteService quoteService;
     private final OrderService orderService;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${bootstrap.superuser-password}")
+    private String superuserPassword;
+
+    @Value("${bootstrap.demo-password}")
+    private String demoPassword;
 
     @Override
     @Transactional
@@ -59,14 +67,14 @@ public class BootstrapServiceImpl implements BootstrapService {
                 .balance(BigDecimal.ZERO)
                 .superuser(true)
                 .build();
-        superuser.setPassword(passwordEncoder.encode(SUPERUSER_PASSWORD));
+        superuser.setPassword(passwordEncoder.encode(superuserPassword));
         userRepository.save(superuser);
         return true;
     }
 
     private int ensureDemoUsers() {
         int created = 0;
-        created += createUserIfMissing("alice", new BigDecimal("1000.00"));
+        created += createUserIfMissing(ALICE_USERNAME, new BigDecimal("1000.00"));
         created += createUserIfMissing("bob", new BigDecimal("850.00"));
         created += createUserIfMissing("carla", new BigDecimal("1200.00"));
         return created;
@@ -82,7 +90,7 @@ public class BootstrapServiceImpl implements BootstrapService {
                 .balance(balance)
                 .superuser(false)
                 .build();
-        user.setPassword(passwordEncoder.encode(DEMO_PASSWORD));
+        user.setPassword(passwordEncoder.encode(demoPassword));
         userRepository.save(user);
         return 1;
     }
@@ -143,7 +151,7 @@ public class BootstrapServiceImpl implements BootstrapService {
     }
 
     private int ensureOrders() {
-        if (userRepository.findByUsername("alice").isEmpty() || userRepository.findByUsername("bob").isEmpty()) {
+        if (userRepository.findByUsername(ALICE_USERNAME).isEmpty() || userRepository.findByUsername("bob").isEmpty()) {
             return 0;
         }
         if (orderRepository.count() > 0) {
@@ -155,7 +163,7 @@ public class BootstrapServiceImpl implements BootstrapService {
             return 0;
         }
 
-        User alice = userRepository.findByUsername("alice").orElseThrow();
+        User alice = userRepository.findByUsername(ALICE_USERNAME).orElseThrow();
         User bob = userRepository.findByUsername("bob").orElseThrow();
 
         int createdOrders = 0;
