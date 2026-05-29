@@ -83,11 +83,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn -B sonar:sonar \
-            -Dsonar.organization=futmarket \
-            -Dsonar.projectKey=thiagosofarelli_futmarket \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/target/site/jacoco/jacoco.xml
+          mvn -B sonar:sonar
 
   # ------------------------------------------------------------
   # JOB 3: ENVÍO DE DEPENDENCIAS A GITHUB (Dependency Graph)
