@@ -86,8 +86,3 @@ SonarCloud usa `SONAR_TOKEN` como secret en GitHub Actions. El `projectKey` y la
 - Swagger/OpenAPI disponible
 - Cobertura con JaCoCo
 - SonarCloud integrado en CI
-
-## Notas
-
-- La app activa Docker Compose automáticamente cuando corre fuera de tests.
-- Si querés desactivar OpenAPI en producción, todavía queda pendiente definir esa política.
