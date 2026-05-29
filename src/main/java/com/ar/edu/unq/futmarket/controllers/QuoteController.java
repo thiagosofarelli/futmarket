@@ -31,7 +31,7 @@ public class QuoteController {
         List<Quote> quotes = quoteService.findByPlayerId(playerId);
         List<QuoteDTO> dtos = quotes.stream()
                 .map(q -> modelMapper.map(q, QuoteDTO.class))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(dtos);
     }
 }
