@@ -102,9 +102,9 @@ public class BootstrapServiceImpl implements BootstrapService {
 
         List<Player> players = List.of(
                 Player.builder()
-                        .name("Lionel Messi")
-                        .team("Inter Miami")
-                        .league("Major League Soccer")
+                        .name("Lamine Yamal")
+                        .team("FC Barcelona")
+                        .league("La Liga")
                         .playerPosition(PlayerPosition.FORWARD)
                         .externalId(1001L)
                         .build(),
