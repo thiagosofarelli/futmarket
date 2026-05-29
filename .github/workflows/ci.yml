@@ -13,6 +13,7 @@ jobs:
     env:
       JWT_TOKEN: ${{ secrets.JWT_TOKEN }}
       FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     permissions:
       contents: read
