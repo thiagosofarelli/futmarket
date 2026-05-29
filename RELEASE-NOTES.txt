@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------
-TAG desapp_grupoB_futmarket_release1-1.0
+TAG desapp_grupoB_futmarket_entrega1-1.0
 ---------------------------------------------------------------------
 NEW FEATURES:
 * User authentication with registration and login, returning JWT.
