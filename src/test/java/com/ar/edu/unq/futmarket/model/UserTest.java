@@ -69,14 +69,19 @@ class UserTest {
     @Test
     void constructor_negativeBalance_throws() {
         BigDecimal negativeBalance = new BigDecimal("-1");
-        assertThrows(IllegalArgumentException.class,
-                () -> User.builder().username("user").balance(negativeBalance).build());
+        var userBuilder = User.builder()
+                .username("user")
+                .balance(negativeBalance);
+        assertThrows(IllegalArgumentException.class, () -> userBuilder.build());
     }
 
     @Test
     void constructor_nullBalance_throws() {
+        var userBuilder = User.builder()
+                .username("user")
+                .balance(null);
         assertThrows(IllegalArgumentException.class,
-                () -> User.builder().username("user").balance(null).build());
+                () -> userBuilder.build());
     }
 
 
