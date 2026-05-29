@@ -58,6 +58,7 @@ jobs:
       - name: Run coverage verification
         run: |
           mvn -B verify sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.projectKey=thiagosofarelli_futmarket \
             -Dsonar.organization=futmarket \
