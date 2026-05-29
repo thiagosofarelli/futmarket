@@ -7,19 +7,18 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  build:
+  test-and-sonar:
     runs-on: ubuntu-latest
 
     env:
       JWT_TOKEN: ${{ secrets.JWT_TOKEN }}
       FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
 
-    permissions:
-      contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Clave para SonarCloud: necesita el historial completo para evaluar cambios
 
       - name: Set up JDK 17 and Maven
         uses: actions/setup-java@v4
@@ -28,34 +27,18 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Build and unit test
-        run: mvn -B clean test
+      # 1. Corre tests unitarios, E2E y genera el reporte de JaCoCo
+      - name: Run verification & generate coverage
+        run: mvn -B clean verify
 
-  coverage:
-    runs-on: ubuntu-latest
-    needs: build
+      # 2. Dispara el análisis de SonarCloud leyendo el reporte generado previamente
+      - name: SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -B sonar:sonar
 
-    env:
-      JWT_TOKEN: ${{ secrets.JWT_TOKEN }}
-      FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17 and Maven
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: maven
-
-      - name: Run coverage verification
-        run: mvn -B verify
-
+      # Guardamos reportes como artefactos por si querés revisarlos manualmente
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
