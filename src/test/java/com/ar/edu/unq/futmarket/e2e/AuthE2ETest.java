@@ -65,10 +65,9 @@ class AuthE2ETest {
         assertThatThrownBy(() ->
             restTemplate.postForEntity(registerUrl(), request, AuthResponse.class)
         ).isInstanceOf(HttpClientErrorException.class)
-         .satisfies(ex -> {
-             int status = ((HttpClientErrorException) ex).getStatusCode().value();
-             assertThat(status).isBetween(400, 499);
-         });
+         .satisfies(ex ->
+             assertThat(((HttpClientErrorException) ex).getStatusCode().value()).isBetween(400, 499)
+         );
     }
 
     @Test
@@ -95,10 +94,9 @@ class AuthE2ETest {
         assertThatThrownBy(() ->
             restTemplate.postForEntity(loginUrl(), request, AuthResponse.class)
         ).isInstanceOf(HttpClientErrorException.class)
-         .satisfies(ex -> {
-             int status = ((HttpClientErrorException) ex).getStatusCode().value();
-             assertThat(status).isBetween(400, 499);
-         });
+         .satisfies(ex ->
+             assertThat(((HttpClientErrorException) ex).getStatusCode().value()).isBetween(400, 499)
+         );
     }
 
     @Test
