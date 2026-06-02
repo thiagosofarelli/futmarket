@@ -46,7 +46,7 @@ public class OrderController {
         List<Order> orders = orderService.getTransactionsByUserId(userId);
         List<OrderDTO> dtos = orders.stream()
                 .map(order -> modelMapper.map(order, OrderDTO.class))
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(dtos);
     }
 }
