@@ -70,10 +70,10 @@ public class Portfolio {
         BigDecimal totalCost = pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity));
 
         if (user.getBalance().compareTo(totalCost) < 0) {
-            throw new InsufficientBalanceException();
+            throw new InvalidBalanceException();
         }
         Optional<Position> superuserPosition = superuser.getPortfolio().getPosition(player);
-        if (!superuserPosition.isPresent()) {
+        if (superuserPosition.isEmpty()) {
             throw new SuperuserDoesntHaveThatPositionException();
         }
         Position presentPosition = superuserPosition.get();

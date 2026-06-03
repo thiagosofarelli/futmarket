@@ -1,6 +1,5 @@
 package com.ar.edu.unq.futmarket.model;
 
-import com.ar.edu.unq.futmarket.exception.InsufficientBalanceException;
 import com.ar.edu.unq.futmarket.exception.InvalidBalanceException;
 import com.ar.edu.unq.futmarket.exception.UsernameCannotBeBlankException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -79,7 +78,7 @@ public class User {
         BigDecimal newBalance = this.balance.subtract(amount);
 
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new InsufficientBalanceException();
+            throw new InvalidBalanceException();
         }
 
         this.balance = newBalance;

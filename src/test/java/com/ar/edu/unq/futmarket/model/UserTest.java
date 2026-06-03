@@ -1,5 +1,7 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.ar.edu.unq.futmarket.exception.InvalidBalanceException;
+import com.ar.edu.unq.futmarket.exception.UsernameCannotBeBlankException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -50,12 +52,12 @@ class UserTest {
 
     @Test
     void constructor_nullUsername_throws() {
-        assertThrows(IllegalArgumentException.class, () -> new User(null));
+        assertThrows(UsernameCannotBeBlankException.class, () -> new User(null));
     }
 
     @Test
     void constructor_blankUsername_throws() {
-        assertThrows(IllegalArgumentException.class, () -> new User("   "));
+        assertThrows(UsernameCannotBeBlankException.class, () -> new User("   "));
     }
 
 
@@ -72,7 +74,7 @@ class UserTest {
         var userBuilder = User.builder()
                 .username("user")
                 .balance(negativeBalance);
-        assertThrows(IllegalArgumentException.class, () -> userBuilder.build());
+        assertThrows(InvalidBalanceException.class, () -> userBuilder.build());
     }
 
     @Test
@@ -80,7 +82,7 @@ class UserTest {
         var userBuilder = User.builder()
                 .username("user")
                 .balance(null);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidBalanceException.class,
                 () -> userBuilder.build());
     }
 
@@ -93,12 +95,12 @@ class UserTest {
 
     @Test
     void setUsername_null_throws() {
-        assertThrows(IllegalArgumentException.class, () -> user.setUsername(null));
+        assertThrows(UsernameCannotBeBlankException.class, () -> user.setUsername(null));
     }
 
     @Test
     void setUsername_blank_throws() {
-        assertThrows(IllegalArgumentException.class, () -> user.setUsername(""));
+        assertThrows(UsernameCannotBeBlankException.class, () -> user.setUsername(""));
     }
 
     // --- addBalance ---
@@ -118,18 +120,18 @@ class UserTest {
 
     @Test
     void addBalance_null_throws() {
-        assertThrows(IllegalArgumentException.class, () -> user.addBalance(null));
+        assertThrows(InvalidBalanceException.class, () -> user.addBalance(null));
     }
 
     @Test
     void addBalance_zero_throws() {
-        assertThrows(IllegalArgumentException.class, () -> user.addBalance(BigDecimal.ZERO));
+        assertThrows(InvalidBalanceException.class, () -> user.addBalance(BigDecimal.ZERO));
     }
 
     @Test
     void addBalance_negative_throws() {
         BigDecimal negativeAmount = new BigDecimal("-100");
-        assertThrows(IllegalArgumentException.class, () -> user.addBalance(negativeAmount));
+        assertThrows(InvalidBalanceException.class, () -> user.addBalance(negativeAmount));
     }
 
     @Test
@@ -147,20 +149,20 @@ class UserTest {
     }
 
     @Test
-    void subBalance_moreThanBalance_throwsIllegalArgumentException() {
+    void subBalance_moreThanBalance_throws() {
         user.setBalance(new BigDecimal("500.00"));
         BigDecimal excessAmount = new BigDecimal("9999.00");
-        assertThrows(IllegalArgumentException.class, () -> user.subBalance(excessAmount));
+        assertThrows(InvalidBalanceException.class, () -> user.subBalance(excessAmount));
     }
 
     @Test
     void subBalance_null_throws() {
-        assertThrows(IllegalArgumentException.class, () -> user.subBalance(null));
+        assertThrows(InvalidBalanceException.class, () -> user.subBalance(null));
     }
 
     @Test
     void subBalance_negative_throws() {
         BigDecimal negativeAmount = new BigDecimal("-100");
-        assertThrows(IllegalArgumentException.class, () -> user.subBalance(negativeAmount));
+        assertThrows(InvalidBalanceException.class, () -> user.subBalance(negativeAmount));
     }
 }

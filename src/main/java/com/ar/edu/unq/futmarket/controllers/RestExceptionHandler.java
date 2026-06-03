@@ -101,11 +101,6 @@ public class RestExceptionHandler {
         return buildErrorResponse(ex, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(InsufficientBalanceException.class)
-    public ResponseEntity<ApiError> handleInsufficientBalance(Exception ex) {
-        return buildErrorResponse(ex, HttpStatus.CONFLICT);
-    }
-
     @ExceptionHandler(SuperuserDoesntHaveThatPositionException.class)
     public ResponseEntity<ApiError> handleSuperuserDoesntHaveThatPosition(Exception ex) {
         return buildErrorResponse(ex, HttpStatus.CONFLICT);
