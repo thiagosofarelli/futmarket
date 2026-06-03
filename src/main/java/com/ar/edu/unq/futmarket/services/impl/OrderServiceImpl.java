@@ -33,13 +33,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order buy(UserDetails buyerDetails, Long playerId, int quantity) {
         User buyer = userService.findByUsername(buyerDetails.getUsername());
-        Player player = playerService.findById(playerId);
         User superuser = userService.findSuperuser();
+        Player player = playerService.findById(playerId);
 
         BigDecimal pricePerToken = player.getCurrentTokenPrice();
 
-        buyer.getPortfolio().registerPurchase(player, quantity);
+        buyer.getPortfolio().registerPurchase(player, quantity, superuser);
         userRepository.save(buyer);
+        userRepository.save(superuser);
         playerRepository.save(player);
 
         return orderRepository.save(buildOrder(buyer, superuser, player, OrderType.BUY, quantity, pricePerToken));
@@ -48,13 +49,14 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Order sell(UserDetails sellerDetails, Long playerId, int quantity) {
         User seller = userService.findByUsername(sellerDetails.getUsername());
-        Player player = playerService.findById(playerId);
         User superuser = userService.findSuperuser();
+        Player player = playerService.findById(playerId);
 
         BigDecimal pricePerToken = player.getCurrentTokenPrice();
 
-        seller.getPortfolio().registerSell(player, quantity);
+        seller.getPortfolio().registerSell(player, quantity, superuser);
         userRepository.save(seller);
+        userRepository.save(superuser);
         playerRepository.save(player);
 
         return orderRepository.save(buildOrder(superuser, seller, player, OrderType.SELL, quantity, pricePerToken));

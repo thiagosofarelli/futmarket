@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.ar.edu.unq.futmarket.controllers.response.BootstrapResponse;
 import com.ar.edu.unq.futmarket.model.Player;
+import com.ar.edu.unq.futmarket.model.Position;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
@@ -22,6 +23,9 @@ import com.ar.edu.unq.futmarket.services.QuoteService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +42,6 @@ public class BootstrapServiceImpl implements BootstrapService {
     private final OrderService orderService;
     private final PasswordEncoder passwordEncoder;
     private final PositionRepository positionRepository;
-    private final PortfolioService portfolioService;
     private final PortfolioRepository portfolioRepository;
 
     @Value("${bootstrap.superuser-password}")
@@ -53,6 +56,7 @@ public class BootstrapServiceImpl implements BootstrapService {
         boolean superuserCreated = ensureSuperuser();
         int usersCreated = ensureDemoUsers();
         int playersCreated = ensurePlayers();
+        ensureSuperuserOwnsAllPlayerPositions();
         int quotesCreated = ensureQuotes(playersCreated > 0);
         int ordersCreated = ensureOrders();
 
@@ -148,6 +152,32 @@ public class BootstrapServiceImpl implements BootstrapService {
 
         playerRepository.saveAll(players);
         return players.size();
+    }
+
+    private void ensureSuperuserOwnsAllPlayerPositions() {
+        User superuser = userRepository.findBySuperuserTrue().orElseThrow();
+        List<Player> players = playerRepository.findAll();
+
+        Set<Long> positionedPlayerIds = new HashSet<>();
+        for (Position position : superuser.getPortfolio().getPositions()) {
+            if (position.getPlayer() != null && position.getPlayer().getId() != null) {
+                positionedPlayerIds.add(position.getPlayer().getId());
+            }
+        }
+
+        for (Player player : players) {
+            if (player.getId() != null && !positionedPlayerIds.contains(player.getId())) {
+                Position position = Position.builder()
+                        .portfolio(superuser.getPortfolio())
+                        .player(player)
+                        .tokensAcquired(player.getIssuedTokens())
+                        .averagePurchasePrice(BigDecimal.ONE)
+                        .build();
+                superuser.getPortfolio().getPositions().add(position);
+            }
+        }
+
+        userRepository.save(superuser);
     }
 
     private int ensureQuotes(boolean playersWereCreated) {

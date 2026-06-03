@@ -62,7 +62,7 @@ public class Portfolio {
         return left.getId() != null && left.getId().equals(right.getId());
     }
 
-    public void registerPurchase(Player player, int tokensQuantity) {
+    public void registerPurchase(Player player, int tokensQuantity, User superuser) {
         validateTradeInput(player, tokensQuantity);
         ensureUserAssigned();
 
@@ -72,30 +72,37 @@ public class Portfolio {
         if (user.getBalance().compareTo(totalCost) < 0) {
             throw new IllegalArgumentException("You don't have enough balance.");
         }
+        Position superuserPosition = superuser.getPortfolio().getPosition(player).get();
 
-        if (tokensQuantity > player.getAvailableTokens()) {
-            throw new IllegalArgumentException("There aren't enough tokens to purchase.");
+        superuserPosition.registerSell(tokensQuantity);
+        if (superuserPosition.getTokensAcquired() == 0) {
+            superuser.getPortfolio().getPositions().remove(superuserPosition);
         }
-
         Position position = findOrCreatePosition(player);
         position.registerPurchase(tokensQuantity, pricePerToken);
         user.subBalance(totalCost);
+        superuser.addBalance(totalCost);
     }
 
-    public void registerSell(Player player, int tokensQuantity) {
+    public void registerSell(Player player, int tokensQuantity, User superuser) {
         validateTradeInput(player, tokensQuantity);
         ensureUserAssigned();
 
         BigDecimal pricePerToken = requirePositivePrice(player);
         Position position = this.getPosition(player)
-                .orElseThrow(() -> new IllegalArgumentException("The portfolio does not have a position."));
+                .orElseThrow(() -> new IllegalArgumentException("The seller portfolio does not have that position."));
 
         position.registerSell(tokensQuantity);
+
+        Position superUserPosition = superuser.getPortfolio().findOrCreatePosition(player);
+        superUserPosition.registerPurchase(tokensQuantity, pricePerToken);
 
         if (position.getTokensAcquired() == 0) {
             positions.remove(position);
         }
+
         user.addBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
+        superuser.subBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
     }
 
     private void validateTradeInput(Player player, int tokensQuantity) {

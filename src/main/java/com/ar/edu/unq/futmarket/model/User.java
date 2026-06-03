@@ -76,7 +76,13 @@ public class User {
             throw new IllegalArgumentException("amount must be >= 0");
         }
 
-        balance = balance.subtract(amount).max(BigDecimal.ZERO);
+        BigDecimal balance = this.balance.subtract(amount);
+
+        if (balance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Insufficient balance. Operation denied.");
+        }
+
+        this.balance = balance;
     }
 
     private void validateUsername(String username) {
