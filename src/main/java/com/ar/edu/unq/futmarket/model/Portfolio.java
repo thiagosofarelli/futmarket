@@ -27,7 +27,6 @@ public class Portfolio {
     @OneToOne(mappedBy = "portfolio")
     private User user;
 
-    @Builder.Default
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Position> positions = new ArrayList<>();
 
@@ -72,12 +71,18 @@ public class Portfolio {
         if (user.getBalance().compareTo(totalCost) < 0) {
             throw new IllegalArgumentException("You don't have enough balance.");
         }
-        Position superuserPosition = superuser.getPortfolio().getPosition(player).get();
-
-        superuserPosition.registerSell(tokensQuantity);
-        if (superuserPosition.getTokensAcquired() == 0) {
-            superuser.getPortfolio().getPositions().remove(superuserPosition);
+        if (player.getAvailableTokens() < tokensQuantity) {
+            throw new IllegalArgumentException("Not enough available tokens.");
         }
+
+        superuser.getPortfolio().getPosition(player).ifPresent(superuserPos -> {
+            superuserPos.registerSell(tokensQuantity);
+            if (superuserPos.getTokensAcquired() == 0) {
+                superuser.getPortfolio().getPositions().remove(superuserPos);
+            }
+        });
+
+        player.subAvailableTokens(tokensQuantity);
         Position position = findOrCreatePosition(player);
         position.registerPurchase(tokensQuantity, pricePerToken);
         user.subBalance(totalCost);
@@ -101,8 +106,10 @@ public class Portfolio {
             positions.remove(position);
         }
 
-        user.addBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
-        superuser.subBalance(pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity)));
+        BigDecimal totalAmount = pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity));
+        player.addAvailableTokens(tokensQuantity);
+        user.addBalance(totalAmount);
+        superuser.subBalance(totalAmount);
     }
 
     private void validateTradeInput(Player player, int tokensQuantity) {

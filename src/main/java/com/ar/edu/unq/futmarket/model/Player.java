@@ -37,6 +37,10 @@ public class Player {
     @Builder.Default
     private int issuedTokens = 100;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private int availableTokens = 100;
+
     @Column(nullable = false, precision = 10, scale = 4)
     @Builder.Default
     private BigDecimal currentTokenPrice = BigDecimal.ONE;
@@ -73,5 +77,16 @@ public class Player {
 
     @Column(name = "last_stats_sync")
     private LocalDateTime lastStatsSync;
+
+    public void addAvailableTokens(int amount) {
+        this.availableTokens += amount;
+    }
+
+    public void subAvailableTokens(int amount) {
+        if (amount > this.availableTokens) {
+            throw new IllegalArgumentException("Not enough available tokens");
+        }
+        this.availableTokens -= amount;
+    }
 }
 

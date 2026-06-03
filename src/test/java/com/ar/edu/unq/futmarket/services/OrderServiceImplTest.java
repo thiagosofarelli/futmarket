@@ -102,6 +102,7 @@ class OrderServiceImplTest {
 
     @Test
     void buy_notEnoughTokens_throwsIllegalArgumentException() {
+        messi.setAvailableTokens(0);
         playerRepository.save(messi);
 
         UserDetails aliceDetails = userDetailsOf(alice);

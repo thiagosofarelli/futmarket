@@ -36,6 +36,16 @@ class PortfolioTest {
                 .playerPosition(PlayerPosition.FORWARD)
                 .build();
         player.setCurrentTokenPrice(new BigDecimal("10.00"));
+        giveSuperuserPosition(player);
+    }
+
+    private void giveSuperuserPosition(Player p) {
+        Position pos = new Position();
+        pos.setPortfolio(superuser.getPortfolio());
+        pos.setPlayer(p);
+        pos.setTokensAcquired(100);
+        pos.setAveragePurchasePrice(p.getCurrentTokenPrice());
+        superuser.getPortfolio().getPositions().add(pos);
     }
 
     @Test
@@ -69,6 +79,7 @@ class PortfolioTest {
                 .playerPosition(PlayerPosition.FORWARD)
                 .build();
         other.setCurrentTokenPrice(new BigDecimal("8.00"));
+        giveSuperuserPosition(other);
 
         portfolio.registerPurchase(player, 3, superuser);
         portfolio.registerPurchase(other, 2, superuser);
@@ -180,6 +191,7 @@ class PortfolioTest {
                 .playerPosition(PlayerPosition.FORWARD)
                 .build();
         other.setCurrentTokenPrice(new BigDecimal("5.00"));
+        giveSuperuserPosition(other);
 
         portfolio.registerPurchase(player, 10, superuser); // 10 * 10 = 100
         portfolio.registerPurchase(other, 4, superuser);   //  4 *  5 =  20 → total: 120
