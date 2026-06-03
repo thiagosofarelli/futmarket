@@ -1,5 +1,7 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 import com.ar.edu.unq.futmarket.model.enums.League;
@@ -45,10 +47,10 @@ public class PlayerController {
     }
 
     @GetMapping("/ranking")
-    public ResponseEntity<List<PlayerDTO>> getRanking() {
-        List<PlayerDTO> dtos = playerService.getRanking().stream()
-                .map(player -> modelMapper.map(player, PlayerDTO.class))
-                .toList();
+    public ResponseEntity<Page<PlayerDTO>> getRanking(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<PlayerDTO> dtos = playerService.getRanking(pageable)
+                .map(player -> modelMapper.map(player, PlayerDTO.class));
         return ResponseEntity.ok(dtos);
     }
 
