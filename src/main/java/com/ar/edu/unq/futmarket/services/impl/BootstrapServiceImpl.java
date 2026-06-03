@@ -3,6 +3,9 @@ package com.ar.edu.unq.futmarket.services.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.ar.edu.unq.futmarket.controllers.response.ApiGeneralResponse;
+import com.ar.edu.unq.futmarket.repositories.*;
+import com.ar.edu.unq.futmarket.services.PortfolioService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,10 +16,6 @@ import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
-import com.ar.edu.unq.futmarket.repositories.OrderRepository;
-import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
-import com.ar.edu.unq.futmarket.repositories.QuoteRepository;
-import com.ar.edu.unq.futmarket.repositories.UserRepository;
 import com.ar.edu.unq.futmarket.services.BootstrapService;
 import com.ar.edu.unq.futmarket.services.OrderService;
 import com.ar.edu.unq.futmarket.services.QuoteService;
@@ -38,6 +37,9 @@ public class BootstrapServiceImpl implements BootstrapService {
     private final QuoteService quoteService;
     private final OrderService orderService;
     private final PasswordEncoder passwordEncoder;
+    private final PositionRepository positionRepository;
+    private final PortfolioService portfolioService;
+    private final PortfolioRepository portfolioRepository;
 
     @Value("${bootstrap.superuser-password}")
     private String superuserPassword;
@@ -55,6 +57,19 @@ public class BootstrapServiceImpl implements BootstrapService {
         int ordersCreated = ensureOrders();
 
         return new BootstrapResponse(superuserCreated, usersCreated, playersCreated, ordersCreated, quotesCreated);
+    }
+
+    @Override
+    @Transactional
+    public ApiGeneralResponse removeAllData() {
+        orderRepository.deleteAll();
+        quoteRepository.deleteAll();
+        userRepository.deleteAll();
+        playerRepository.deleteAll();
+        portfolioRepository.deleteAll();
+        positionRepository.deleteAll();
+
+        return new ApiGeneralResponse("All data removed");
     }
 
     private boolean ensureSuperuser() {
