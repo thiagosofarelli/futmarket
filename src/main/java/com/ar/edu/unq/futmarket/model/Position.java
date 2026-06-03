@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.ar.edu.unq.futmarket.exception.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,13 +45,13 @@ public class Position {
 
     public void registerPurchase(int tokensQuantity, BigDecimal pricePerToken) {
         if (tokensQuantity <= 0) {
-            throw new IllegalArgumentException("token quantity must be greater than zero");
+            throw new InvalidTokenQuantityException();
         }
         if (pricePerToken == null || pricePerToken.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("purchase price must be greater than zero");
+            throw new InvalidPurchasePriceException();
         }
         if (player == null) {
-            throw new IllegalStateException("position must be associated with a player");
+            throw new UserNotFoundException();
         }
 
         BigDecimal currentCost = averagePurchasePrice.multiply(BigDecimal.valueOf(tokensAcquired));
@@ -65,13 +66,13 @@ public class Position {
 
     public void registerSell(int quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("token quantity must be greater than zero");
+            throw new InvalidTokenQuantityException();
         }
         if (quantity > tokensAcquired) {
-            throw new IllegalArgumentException("There are not enough tokens to sell");
+            throw new InsufficientTokensException();
         }
         if (player == null) {
-            throw new IllegalStateException("position must be associated with a player");
+            throw new PlayerNotFoundException();
         }
         this.subTokens(quantity);
     }

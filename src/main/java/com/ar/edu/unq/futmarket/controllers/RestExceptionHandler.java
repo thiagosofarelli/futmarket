@@ -21,6 +21,11 @@ public class RestExceptionHandler {
         return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(PositionNotFoundException.class)
+    public ResponseEntity<ApiError> handlePositionNotFound(PositionNotFoundException ex) {
+        return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ApiError> handleIllegalState(IllegalStateException ex) {
         return buildErrorResponse(ex, HttpStatus.CONFLICT);
@@ -31,14 +36,44 @@ public class RestExceptionHandler {
         return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(InvalidBalanceException.class)
+    public ResponseEntity<ApiError> handleInvalidBalance(InvalidBalanceException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UsernameCannotBeBlankException.class)
+    public ResponseEntity<ApiError> handleUsernameCannotBeBlank(UsernameCannotBeBlankException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidPurchasePriceException.class)
+    public ResponseEntity<ApiError> handleInvalidPurchasePrice(InvalidPurchasePriceException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(PlayerNotFoundException.class)
     public ResponseEntity<ApiError> handlePlayerNotFound(PlayerNotFoundException ex) {
         return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(InvalidTokenPriceException.class)
+    public ResponseEntity<ApiError> handleInvalidTokenPrice(InvalidTokenPriceException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InsufficientTokensException.class)
+    public ResponseEntity<ApiError> handleInsufficientTokens(InsufficientTokensException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(PortfolioNotFoundException.class)
     public ResponseEntity<ApiError> handlePortfolioNotFound(PortfolioNotFoundException ex) {
         return buildErrorResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidTokenQuantityException.class)
+    public ResponseEntity<ApiError> handleInvalidTokenQuantity(InvalidTokenQuantityException ex) {
+        return buildErrorResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
@@ -63,6 +98,16 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleUsernameAlreadyExists(Exception ex) {
+        return buildErrorResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ApiError> handleInsufficientBalance(Exception ex) {
+        return buildErrorResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(SuperuserDoesntHaveThatPositionException.class)
+    public ResponseEntity<ApiError> handleSuperuserDoesntHaveThatPosition(Exception ex) {
         return buildErrorResponse(ex, HttpStatus.CONFLICT);
     }
 

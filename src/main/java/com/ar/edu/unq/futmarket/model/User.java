@@ -1,5 +1,8 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.ar.edu.unq.futmarket.exception.InsufficientBalanceException;
+import com.ar.edu.unq.futmarket.exception.InvalidBalanceException;
+import com.ar.edu.unq.futmarket.exception.UsernameCannotBeBlankException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -60,26 +63,23 @@ public class User {
 
     public void addBalance(BigDecimal amount) {
         if (amount == null) {
-            throw new IllegalArgumentException("amount must not be null");
+            throw new InvalidBalanceException();
         }
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("amount must be > 0");
+            throw new InvalidBalanceException();
         }
         balance = balance.add(amount);
     }
 
     public void subBalance(BigDecimal amount) {
-        if (amount == null) {
-            throw new IllegalArgumentException("amount must not be null");
-        }
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("amount must be >= 0");
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InvalidBalanceException();
         }
 
         BigDecimal newBalance = this.balance.subtract(amount);
 
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Insufficient balance. Operation denied.");
+            throw new InsufficientBalanceException();
         }
 
         this.balance = newBalance;
@@ -87,16 +87,13 @@ public class User {
 
     private void validateUsername(String username) {
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("username must not be blank");
+            throw new UsernameCannotBeBlankException();
         }
     }
 
     private void validateNonNegativeBalance(BigDecimal amount) {
-        if (amount == null) {
-            throw new IllegalArgumentException("balance must not be null");
-        }
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("balance must be >= 0");
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new InvalidBalanceException();
         }
     }
 }
