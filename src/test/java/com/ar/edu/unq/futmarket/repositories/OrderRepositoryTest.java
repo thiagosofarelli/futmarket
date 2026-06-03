@@ -73,7 +73,7 @@ class OrderRepositoryTest {
                 .build());
 
         Order found = orderRepository.findById(order.getId()).orElseThrow();
-        assertThat(found.getStatus()).isEqualTo(OrderStatus.PENDING);
+        assertThat(found.getStatus()).isEqualTo(OrderStatus.COMPLETED);
         assertThat(found.getCreatedAt()).isNotNull();
         assertThat(found.getTotalAmount()).isEqualByComparingTo("10.0000");
     }

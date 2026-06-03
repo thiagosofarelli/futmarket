@@ -142,23 +142,24 @@ Authorization: Bearer <jwt>
 
 ## API Endpoints
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/auth/register` | No | Register a new user |
-| POST | `/auth/login` | No | Login and get JWT |
-| GET | `/players` | Yes | List players (filter by `league`, `team`, `playerPosition`; paginated) |
-| GET | `/players/ranking` | Yes | Players ranked by token price |
-| GET | `/players/{id}` | Yes | Single player detail |
-| GET | `/players/{id}/quotes` | Yes | Quote history for a player |
-| POST | `/quotes/recalculate` | Yes | Trigger quote recalculation (`strategy`: `GENERAL_PERFORMANCE` or `POSITION_WEIGHTED`) |
-| GET | `/quotes/player/{id}` | Yes | Quotes for a player via quotes endpoint |
-| POST | `/orders/buy` | Yes | Buy player tokens |
-| POST | `/orders/sell` | Yes | Sell player tokens |
-| GET | `/orders/user/{userId}` | Yes | Transaction history for a user |
-| GET | `/users/{id}` | Yes | User profile |
-| GET | `/users/{id}/portfolio` | Yes | User portfolio (via users endpoint) |
-| GET | `/users/{id}/transactions` | Yes | User transaction history (via users endpoint) |
-| POST | `/admin/bootstrap/demo-data` | No | Seed demo data |
+| Method | Endpoint                     | Auth            | Description |
+|--------|------------------------------|-----------------|-------------|
+| POST   | `/auth/register`             | No              | Register a new user |
+| POST   | `/auth/login`                | No              | Login and get JWT |
+| GET    | `/players`                   | No              | List players (filter by `league`, `team`, `playerPosition`; paginated) |
+| GET    | `/players/ranking`           | No              | Players ranked by token price |
+| GET    | `/players/{id}`              | No              | Single player detail |
+| GET    | `/players/{id}/quotes`       | No              | Quote history for a player |
+| POST   | `/quotes/recalculate`        | No              | Trigger quote recalculation (`strategy`: `GENERAL_PERFORMANCE` or `POSITION_WEIGHTED`) |
+| GET    | `/quotes/player/{id}`        | No              | Quotes for a player via quotes endpoint |
+| POST   | `/orders/buy`                | Yes (USER role) | Buy player tokens |
+| POST   | `/orders/sell`               | Yes (USER role  | Sell player tokens |
+| GET    | `/orders/user/{userId}`      | No              | Transaction history for a user |
+| GET    | `/users/{id}`                | No              | User profile |
+| GET    | `/users/{id}/portfolio`      | No              | User portfolio (via users endpoint) |
+| GET    | `/users/{id}/transactions`   | No              | User transaction history (via users endpoint) |
+| POST   | `/admin/bootstrap/demo-data` | No              | Seed demo data |
+| DELETE | `/admin/bootstrap/all-data`  | No              | Seed demo data |
 
 **Buy/sell request body:**
 ```json
