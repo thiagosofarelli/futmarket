@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.ar.edu.unq.futmarket.exception.*;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,33 +89,33 @@ class PortfolioTest {
 
     @Test
     void registerPurchase_nullPlayer_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(PlayerNotFoundException.class,
                 () -> portfolio.registerPurchase(null, 5, superuser));
     }
 
     @Test
     void registerPurchase_zeroQuantity_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenQuantityException.class,
                 () -> portfolio.registerPurchase(player, 0, superuser));
     }
 
     @Test
     void registerPurchase_negativeQuantity_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenQuantityException.class,
                 () -> portfolio.registerPurchase(player, -1, superuser));
     }
 
     @Test
     void registerPurchase_notEnoughBalance_throws() {
         player.setCurrentTokenPrice(new BigDecimal("300.00")); // 4 * 300 = 1200 > 1000
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidBalanceException.class,
                 () -> portfolio.registerPurchase(player, 4, superuser));
     }
 
     @Test
     void registerPurchase_zeroTokenPrice_throws() {
         player.setCurrentTokenPrice(BigDecimal.ZERO);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenPriceException.class,
                 () -> portfolio.registerPurchase(player, 5, superuser));
     }
 
@@ -144,27 +145,27 @@ class PortfolioTest {
 
     @Test
     void registerSell_noExistingPosition_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(PositionNotFoundException.class,
                 () -> portfolio.registerSell(player, 3, superuser));
     }
 
     @Test
     void registerSell_nullPlayer_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(PlayerNotFoundException.class,
                 () -> portfolio.registerSell(null, 3, superuser));
     }
 
     @Test
     void registerSell_zeroQuantity_throws() {
         portfolio.registerPurchase(player, 5, superuser);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenQuantityException.class,
                 () -> portfolio.registerSell(player, 0, superuser));
     }
 
     @Test
     void registerSell_negativeQuantity_throws() {
         portfolio.registerPurchase(player, 5, superuser);
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenQuantityException.class,
                 () -> portfolio.registerSell(player, -2, superuser));
     }
 

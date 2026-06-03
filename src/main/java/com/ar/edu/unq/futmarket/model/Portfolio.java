@@ -1,6 +1,7 @@
 package com.ar.edu.unq.futmarket.model;
 
 
+import com.ar.edu.unq.futmarket.exception.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -64,19 +65,21 @@ public class Portfolio {
 
     public void registerPurchase(Player player, int tokensQuantity, User superuser) {
         validateTradeInput(player, tokensQuantity);
-        ensureUserAssigned();
 
         BigDecimal pricePerToken = requirePositivePrice(player);
         BigDecimal totalCost = pricePerToken.multiply(BigDecimal.valueOf(tokensQuantity));
 
         if (user.getBalance().compareTo(totalCost) < 0) {
-            throw new IllegalArgumentException("You don't have enough balance.");
+            throw new InvalidBalanceException();
         }
-        Position superuserPosition = superuser.getPortfolio().getPosition(player).get();
-
-        superuserPosition.registerSell(tokensQuantity);
-        if (superuserPosition.getTokensAcquired() == 0) {
-            superuser.getPortfolio().getPositions().remove(superuserPosition);
+        Optional<Position> superuserPosition = superuser.getPortfolio().getPosition(player);
+        if (superuserPosition.isEmpty()) {
+            throw new SuperuserDoesntHaveThatPositionException();
+        }
+        Position presentPosition = superuserPosition.get();
+        presentPosition.registerSell(tokensQuantity);
+        if (presentPosition.getTokensAcquired() == 0) {
+            superuser.getPortfolio().getPositions().remove(presentPosition);
         }
         Position position = findOrCreatePosition(player);
         position.registerPurchase(tokensQuantity, pricePerToken);
@@ -86,11 +89,10 @@ public class Portfolio {
 
     public void registerSell(Player player, int tokensQuantity, User superuser) {
         validateTradeInput(player, tokensQuantity);
-        ensureUserAssigned();
 
         BigDecimal pricePerToken = requirePositivePrice(player);
         Position position = this.getPosition(player)
-                .orElseThrow(() -> new IllegalArgumentException("The seller portfolio does not have that position."));
+                .orElseThrow(() -> new PositionNotFoundException());
 
         position.registerSell(tokensQuantity);
 
@@ -107,23 +109,17 @@ public class Portfolio {
 
     private void validateTradeInput(Player player, int tokensQuantity) {
         if (player == null) {
-            throw new IllegalArgumentException("Player must not be null");
+            throw new PlayerNotFoundException();
         }
         if (tokensQuantity <= 0) {
-            throw new IllegalArgumentException("Token quantity must be greater than zero");
-        }
-    }
-
-    private void ensureUserAssigned() {
-        if (user == null) {
-            throw new IllegalStateException("Portfolio must be associated with a user");
+            throw new InvalidTokenQuantityException();
         }
     }
 
     private BigDecimal requirePositivePrice(Player player) {
         BigDecimal pricePerToken = player.getCurrentTokenPrice();
         if (pricePerToken == null || pricePerToken.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Player current token price must be greater than zero.");
+            throw new InvalidTokenPriceException();
         }
         return pricePerToken;
     }

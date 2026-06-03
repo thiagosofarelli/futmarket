@@ -1,7 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
-import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
-import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
+import com.ar.edu.unq.futmarket.exception.*;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.model.Position;
@@ -109,22 +108,22 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void buy_notEnoughTokens_throwsIllegalArgumentException() {
+    void buy_notEnoughTokens_throws() {
         UserDetails aliceDetails = userDetailsOf(alice);
         Long messiId = messi.getId();
         assertThatThrownBy(() -> orderService.buy(aliceDetails, messiId, 101))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InvalidBalanceException.class);
     }
 
     @Test
-    void buy_notEnoughBalance_throwsIllegalArgumentException() {
+    void buy_notEnoughBalance_throws() {
         messi.setCurrentTokenPrice(new BigDecimal("300.00"));
         playerRepository.save(messi);
 
         UserDetails aliceDetails = userDetailsOf(alice);
         Long messiId = messi.getId();
         assertThatThrownBy(() -> orderService.buy(aliceDetails, messiId, 4))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InvalidBalanceException.class);
     }
 
     @Test
@@ -157,21 +156,21 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void sell_noPosition_throwsIllegalArgumentException() {
+    void sell_noPosition_throws() {
         UserDetails aliceDetails = userDetailsOf(alice);
         Long messiId = messi.getId();
         assertThatThrownBy(() -> orderService.sell(aliceDetails, messiId, 3))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(PositionNotFoundException.class);
     }
 
     @Test
-    void sell_moreThanHeld_throwsIllegalArgumentException() {
+    void sell_moreThanHeld_throws() {
         orderService.buy(userDetailsOf(alice), messi.getId(), 5);
 
         UserDetails aliceDetails = userDetailsOf(alice);
         Long messiId = messi.getId();
         assertThatThrownBy(() -> orderService.sell(aliceDetails, messiId, 10))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InsufficientTokensException.class);
     }
 
     @Test
