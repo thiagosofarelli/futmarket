@@ -8,12 +8,12 @@ import java.util.List;
 
 public interface QuoteService {
 
-    public List<Quote> findByPlayerId(Long playerId);
+    List<Quote> findByPlayerId(Long playerId);
 
-    public void recalculateSinglePlayer(Player player, ValuationStrategy strategy);
+    void recalculateSinglePlayer(Player player, ValuationStrategy strategy);
 
-    public void recalculateAll(ValuationStrategy strategy);
+    void recalculateAll(ValuationStrategy strategy);
 
-    public void scheduleWeeklyRecalculation();
+    void scheduleWeeklyRecalculation();
 
 }

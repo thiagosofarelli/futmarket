@@ -1,6 +1,5 @@
 package com.ar.edu.unq.futmarket.controllers;
 
-import com.ar.edu.unq.futmarket.exception.PortfolioNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Portfolio;
@@ -73,7 +72,17 @@ class UserControllerTest {
     @Test
     void getPortfolio_found_returns200() throws Exception {
         Portfolio portfolio = mock(Portfolio.class);
+        when(portfolio.getId()).thenReturn(100L);
         when(portfolio.getPositions()).thenReturn(List.of());
+        when(portfolio.getCurrentValue()).thenReturn(java.math.BigDecimal.ZERO);
+        when(portfolio.getProfitLoss()).thenReturn(java.math.BigDecimal.ZERO);
+
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUsername("thiago");
+        mockUser.setPortfolio(portfolio);
+
+        when(userService.findById(1L)).thenReturn(mockUser);
         when(portfolioService.findByUserId(1L)).thenReturn(portfolio);
 
         mockMvc.perform(get("/users/1/portfolio"))
@@ -82,7 +91,7 @@ class UserControllerTest {
 
     @Test
     void getPortfolio_notFound_returns404() throws Exception {
-        when(portfolioService.findByUserId(99L)).thenThrow(new PortfolioNotFoundException());
+        when(userService.findById(99L)).thenThrow(new UserNotFoundException());
 
         mockMvc.perform(get("/users/99/portfolio"))
                 .andExpect(status().isNotFound());

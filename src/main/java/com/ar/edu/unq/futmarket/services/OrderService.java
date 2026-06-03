@@ -7,10 +7,10 @@ import java.util.List;
 
 public interface OrderService {
 
-    public Order buy(UserDetails buyerDetails, Long playerId, int quantity);
+    Order buy(UserDetails buyerDetails, Long playerId, int quantity);
 
-    public Order sell(UserDetails sellerDetails, Long playerId, int quantity);
+    Order sell(UserDetails sellerDetails, Long playerId, int quantity);
 
-    public List<Order> getTransactionsByUserId(Long userId);
+    List<Order> getTransactionsByUserId(Long userId);
 
 }

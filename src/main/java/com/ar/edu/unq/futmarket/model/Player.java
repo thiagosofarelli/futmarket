@@ -37,10 +37,6 @@ public class Player {
     @Builder.Default
     private int issuedTokens = 100;
 
-    @Column(nullable = false)
-    @Builder.Default
-    private int availableTokens = 100;
-
     @Column(nullable = false, precision = 10, scale = 4)
     @Builder.Default
     private BigDecimal currentTokenPrice = BigDecimal.ONE;
@@ -77,25 +73,5 @@ public class Player {
 
     @Column(name = "last_stats_sync")
     private LocalDateTime lastStatsSync;
-
-    public void subAvailableTokens(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("token quantity must be greater than zero");
-        }
-        if (quantity > this.availableTokens) {
-            throw new IllegalArgumentException("cannot buy more tokens than available");
-        }
-        this.availableTokens -= quantity;
-    }
-
-    public void addAvailableTokens(int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("quantity must be positive");
-        }
-        if (this.availableTokens + quantity > this.issuedTokens) {
-            throw new IllegalArgumentException("Cannot return more tokens than the total issued amount");
-        }
-        this.availableTokens += quantity;
-    }
 }
 

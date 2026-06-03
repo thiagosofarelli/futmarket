@@ -285,29 +285,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/OrderDTO'
-  /portfolios/user/{userId}:
-    get:
-      summary: Portfolio by user
-      description: Returns the current portfolio for a user.
-      parameters:
-        - in: path
-          name: userId
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PortfolioDTO'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
   /users/{id}:
     get:
       summary: User details
