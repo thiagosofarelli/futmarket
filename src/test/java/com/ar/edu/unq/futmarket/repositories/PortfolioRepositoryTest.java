@@ -30,9 +30,15 @@ class PortfolioRepositoryTest {
 
     private User alice;
     private Player messi;
+    private User superuser;
 
     @BeforeEach
     void setUp() {
+        superuser = User.builder()
+                .username("SUPERUSER")
+                .balance(new BigDecimal("1000000.00"))
+                .superuser(true)
+                .build();
         alice = User.builder()
                 .username("alice")
                 .balance(new BigDecimal("10000.00"))
@@ -47,7 +53,6 @@ class PortfolioRepositoryTest {
                 .league("MLS")
                 .playerPosition(PlayerPosition.FORWARD)
                 .currentTokenPrice(new BigDecimal("120.00"))
-                .availableTokens(100)
                 .build();
 
         messi = playerRepository.saveAndFlush(messi);
@@ -64,7 +69,7 @@ class PortfolioRepositoryTest {
     void portfolio_canStorePositions_andCalculateDerivedValues() {
         Portfolio portfolio = alice.getPortfolio();
 
-        portfolio.registerPurchase(messi, 10);
+        portfolio.registerPurchase(messi, 10, superuser);
 
         portfolioRepository.saveAndFlush(portfolio);
 
@@ -81,10 +86,10 @@ class PortfolioRepositoryTest {
     @Test
     void portfolio_registerSale_removesPositionWhenBalanceReachesZero() {
         Portfolio portfolio = alice.getPortfolio();
-        portfolio.registerPurchase(messi, 5);
+        portfolio.registerPurchase(messi, 5, superuser);
         portfolioRepository.saveAndFlush(portfolio);
 
-        portfolio.registerSell(messi, 5);
+        portfolio.registerSell(messi, 5, superuser);
         portfolioRepository.saveAndFlush(portfolio);
 
         Portfolio found = portfolioRepository.findByUser(alice).orElseThrow();
@@ -95,13 +100,13 @@ class PortfolioRepositoryTest {
     @Test
     void version_incrementsOnPositionUpdate() {
         Portfolio portfolio = alice.getPortfolio();
-        portfolio.registerPurchase(messi, 8);
+        portfolio.registerPurchase(messi, 8, superuser);
         portfolio = portfolioRepository.saveAndFlush(portfolio);
 
         Position position = portfolio.getPosition(messi).orElseThrow();
         Long initialVersion = position.getVersion();
 
-        portfolio.registerPurchase(messi, 2);
+        portfolio.registerPurchase(messi, 2, superuser);
         Portfolio updated = portfolioRepository.saveAndFlush(portfolio);
 
         Position updatedPosition = updated.getPosition(messi).orElseThrow();

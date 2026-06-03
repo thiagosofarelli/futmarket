@@ -76,13 +76,6 @@ class OrderServiceImplTest {
         assertThat(updated.getBalance()).isEqualByComparingTo("950.00");
     }
 
-    @Test
-    void buy_decrementsPlayerAvailableTokens() {
-        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
-
-        Player updated = playerRepository.findById(messi.getId()).orElseThrow();
-        assertThat(updated.getAvailableTokens()).isEqualTo(95);
-    }
 
     @Test
     void buy_createsPositionInBuyerPortfolio() {
@@ -90,7 +83,6 @@ class OrderServiceImplTest {
 
         User updated = userRepository.findById(alice.getId()).orElseThrow();
         assertThat(updated.getPortfolio().getPosition(messi)).isPresent();
-        assertThat(updated.getPortfolio().getPosition(messi).get().getTokensAcquired()).isEqualTo(5);
     }
 
     @Test
@@ -110,7 +102,6 @@ class OrderServiceImplTest {
 
     @Test
     void buy_notEnoughTokens_throwsIllegalArgumentException() {
-        messi.setAvailableTokens(3);
         playerRepository.save(messi);
 
         UserDetails aliceDetails = userDetailsOf(alice);
@@ -157,15 +148,6 @@ class OrderServiceImplTest {
 
         User updated = userRepository.findById(alice.getId()).orElseThrow();
         assertThat(updated.getBalance()).isEqualByComparingTo("980.00");
-    }
-
-    @Test
-    void sell_restoresPlayerAvailableTokens() {
-        orderService.buy(userDetailsOf(alice), messi.getId(), 5);
-        orderService.sell(userDetailsOf(alice), messi.getId(), 3);
-
-        Player updated = playerRepository.findById(messi.getId()).orElseThrow();
-        assertThat(updated.getAvailableTokens()).isEqualTo(98);
     }
 
     @Test

@@ -79,8 +79,6 @@ class BootstrapControllerE2ETest {
         assertThat(players).hasSizeGreaterThanOrEqualTo(4);
         players.forEach(player -> {
             assertThat(player.getCurrentTokenPrice()).isGreaterThan(BigDecimal.ZERO);
-            assertThat(player.getAvailableTokens()).isGreaterThanOrEqualTo(0);
-            assertThat(player.getAvailableTokens()).isLessThanOrEqualTo(100);
             assertThat(player.getPlayerPosition()).isNotNull();
         });
 

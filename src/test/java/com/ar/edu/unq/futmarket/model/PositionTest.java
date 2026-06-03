@@ -38,12 +38,6 @@ class PositionTest {
     }
 
     @Test
-    void registerPurchase_decreasesPlayerAvailableTokens() {
-        position.registerPurchase(10, new BigDecimal("5.00"));
-        assertEquals(90, player.getAvailableTokens());
-    }
-
-    @Test
     void registerPurchase_secondPurchase_recalculatesWeightedAverage() {
         position.registerPurchase(10, new BigDecimal("4.00")); // cost: 40
         position.registerPurchase(10, new BigDecimal("6.00")); // cost: 60 → avg: 100/20 = 5.00
@@ -107,7 +101,6 @@ class PositionTest {
         position.registerPurchase(10, new BigDecimal("5.00")); // availableTokens: 90
         position.registerSell(4);
         assertEquals(6, position.getTokensAcquired());
-        assertEquals(94, player.getAvailableTokens()); // 90 + 4
     }
 
     @Test

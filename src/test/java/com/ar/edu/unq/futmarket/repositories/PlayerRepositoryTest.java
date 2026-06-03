@@ -56,7 +56,6 @@ class PlayerRepositoryTest {
     void save_and_findById() {
         Player found = playerRepository.findById(messi.getId()).orElseThrow();
         assertThat(found.getName()).isEqualTo("Messi");
-        assertThat(found.getAvailableTokens()).isEqualTo(100);
     }
 
     @Test
@@ -98,7 +97,6 @@ class PlayerRepositoryTest {
     @Test
     void defaultValues_areCorrect() {
         Player p = playerRepository.findById(messi.getId()).orElseThrow();
-        assertThat(p.getAvailableTokens()).isEqualTo(100);
         assertThat(p.getCurrentTokenPrice()).isEqualByComparingTo("1");
     }
 }
