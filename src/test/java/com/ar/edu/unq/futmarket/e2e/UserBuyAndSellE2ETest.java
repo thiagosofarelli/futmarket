@@ -340,7 +340,7 @@ class UserBuyAndSellE2ETest {
     }
 
     private String portfolioUrl(Long userId) {
-        return "http://localhost:" + port + "/portfolios/user/" + userId;
+        return "http://localhost:" + port + "/users/" + userId + "/portfolio";
     }
 
     private String transactionHistoryUrl(Long userId) {
