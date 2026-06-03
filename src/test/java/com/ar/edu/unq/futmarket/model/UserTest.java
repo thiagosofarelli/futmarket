@@ -147,9 +147,10 @@ class UserTest {
     }
 
     @Test
-    void subBalance_moreThanBalance_throws() {
+    void subBalance_moreThanBalance_clampsAtZero() {
         user.setBalance(new BigDecimal("500.00"));
-        assertThrows(IllegalArgumentException.class, () -> user.subBalance(new BigDecimal("9999.00")));
+        user.subBalance(new BigDecimal("9999.00"));
+        assertEquals(0, BigDecimal.ZERO.compareTo(user.getBalance()));
     }
 
     @Test

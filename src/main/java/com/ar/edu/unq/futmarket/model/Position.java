@@ -35,6 +35,7 @@ public class Position {
     @Column(nullable = false)
     private int tokensAcquired;
 
+    @Builder.Default
     @Column(nullable = false, precision = 10, scale = 4)
     private BigDecimal averagePurchasePrice = BigDecimal.ZERO;
 
@@ -73,9 +74,6 @@ public class Position {
             throw new IllegalStateException("position must be associated with a player");
         }
         this.subTokens(quantity);
-        if (tokensAcquired == 0) {
-            averagePurchasePrice = BigDecimal.ZERO;
-        }
     }
 
     public BigDecimal getCurrentValue() {
