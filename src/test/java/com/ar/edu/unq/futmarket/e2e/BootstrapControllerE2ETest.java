@@ -98,7 +98,7 @@ class BootstrapControllerE2ETest {
             assertThat(order.getBuyer()).isNotNull();
             assertThat(order.getSeller()).isNotNull();
             assertThat(order.getPlayer()).isNotNull();
-            assertThat(order.getStatus()).isIn(OrderStatus.COMPLETED, OrderStatus.PENDING);
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
             assertThat(order.getTokenQuantity()).isGreaterThan(0);
             assertThat(order.getPricePerToken()).isGreaterThan(BigDecimal.ZERO);
             assertThat(order.getTotalAmount()).isGreaterThan(BigDecimal.ZERO);
