@@ -46,6 +46,7 @@ class PortfolioRepositoryTest {
                 .build();
 
         alice = userRepository.saveAndFlush(alice);
+        superuser = userRepository.saveAndFlush(superuser);
 
         messi = Player.builder()
                 .name("Messi")
@@ -56,6 +57,13 @@ class PortfolioRepositoryTest {
                 .build();
 
         messi = playerRepository.saveAndFlush(messi);
+
+        Position superuserPosition = new Position();
+        superuserPosition.setPortfolio(superuser.getPortfolio());
+        superuserPosition.setPlayer(messi);
+        superuserPosition.setTokensAcquired(100);
+        superuser.getPortfolio().getPositions().add(superuserPosition);
+        userRepository.saveAndFlush(superuser);
     }
 
     @Test

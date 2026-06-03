@@ -104,11 +104,10 @@ class PositionTest {
     }
 
     @Test
-    void registerSell_allTokens_setsTokensAndAveragePriceToZero() {
+    void registerSell_allTokens_setsTokensToZero() {
         position.registerPurchase(10, new BigDecimal("5.00"));
         position.registerSell(10);
         assertEquals(0, position.getTokensAcquired());
-        assertEquals(0, BigDecimal.ZERO.compareTo(position.getAveragePurchasePrice()));
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.ar.edu.unq.futmarket.exception.PlayerNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Player;
+import com.ar.edu.unq.futmarket.model.Position;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.model.enums.OrderStatus;
 import com.ar.edu.unq.futmarket.model.enums.OrderType;
@@ -46,6 +47,13 @@ class OrderServiceImplTest {
         superuser = userRepository.save(User.builder().username("SUPERUSER").balance(BigDecimal.ZERO).superuser(true).build());
         alice = userRepository.save(User.builder().username("alice").balance(new BigDecimal("1000.00")).superuser(false).build());
         messi = playerRepository.save(Player.builder().name("Messi").team("Team A").league("League A").playerPosition(PlayerPosition.FORWARD).currentTokenPrice(new BigDecimal("10.00")).build());
+
+        Position superuserPosition = new Position();
+        superuserPosition.setPortfolio(superuser.getPortfolio());
+        superuserPosition.setPlayer(messi);
+        superuserPosition.setTokensAcquired(100);
+        superuser.getPortfolio().getPositions().add(superuserPosition);
+        userRepository.saveAndFlush(superuser);
     }
 
     @Test
@@ -102,11 +110,9 @@ class OrderServiceImplTest {
 
     @Test
     void buy_notEnoughTokens_throwsIllegalArgumentException() {
-        playerRepository.save(messi);
-
         UserDetails aliceDetails = userDetailsOf(alice);
         Long messiId = messi.getId();
-        assertThatThrownBy(() -> orderService.buy(aliceDetails, messiId, 5))
+        assertThatThrownBy(() -> orderService.buy(aliceDetails, messiId, 101))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
