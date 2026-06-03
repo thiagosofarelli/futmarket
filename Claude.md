@@ -46,7 +46,6 @@ com.ar.edu.unq.futmarket
 
 ### Player
 - `issuedTokens = 100` — `@Transient`, always 100, not persisted
-- `availableTokens` — persisted, starts at 100, decremented on purchase and restored on sell
 - `currentTokenPrice` — `BigDecimal`, starts at `1.0`
 - `playerPosition` — `PlayerPosition` enum: `FORWARD`, `MIDFIELDER`, `DEFENDER`, `GOALKEEPER`
 - Stats fields: `goals`, `assists`, `shots`, `keyPasses`, `dribbles`, `tackles`, `interceptions`, `rating`
@@ -94,8 +93,8 @@ com.ar.edu.unq.futmarket
 ## Domain Rules
 - Each player has exactly 100 tokens issued (transient constant)
 - Initial token value: 1 credit
-- A superuser holds all tokens at time zero
-- User purchases go against the superuser initially
+- A superuser holds all tokens at time zero. Therefore, they have a position attached to their portfolio consisting of 100 tokens acquired for each existing player.
+- User purchases and sales are executed against the superuser. If a user wants to buy a certain quantity of a player's tokens, the superuser must possess that exact quantity of tokens acquired, and the user must have a sufficient balance. Conversely, if a user wants to sell, the superuser will buy them only if they have enough balance.
 - Buy/sell operations must be atomic and handle concurrency (optimistic locking via `@Version`)
 
 ## Valuation Strategies
@@ -177,8 +176,8 @@ All extend `JpaRepository<Entity, Long>`:
 - [x] Repositories: Player, User, Portfolio, Position, Quote, Order
 - [x] Domain logic in Portfolio and Position (buy/sell, average price, P&L)
 - [x] Service layer implementation (PlayerService, UserService, OrderService, QuoteService, PortfolioService)
-- [ ] Controllers (REST endpoints)
-- [ ] Valuation strategy calculation logic
-- [ ] Weekly recalculation scheduler (Spring Scheduler)
-- [ ] External adapters (Football-Data.org + WhoScored scraper)
-- [ ] Error handling and logging (`@ControllerAdvice`)
+- [x] Controllers (REST endpoints)
+- [x] Valuation strategy calculation logic
+- [x] Weekly recalculation scheduler (Spring Scheduler)
+- [x] External adapters (Football-Data.org + WhoScored scraper)
+- [x] Error handling and logging (`@ControllerAdvice`)

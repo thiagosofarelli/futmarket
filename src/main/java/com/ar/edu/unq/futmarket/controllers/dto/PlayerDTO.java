@@ -28,7 +28,6 @@ public class PlayerDTO {
     public Double tackles;
     public Double interceptions;
     public Double rating;
-    public Integer availableTokens;
     public LocalDateTime lastStatsSync;
     public String externalId;
 }

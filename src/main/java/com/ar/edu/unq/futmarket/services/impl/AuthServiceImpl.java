@@ -44,7 +44,7 @@ public class AuthServiceImpl implements UserDetailsService, AuthService {
         }
         User user = new User(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
         return new AuthResponse(jwtService.generateToken(request.getUsername()));
     }
 

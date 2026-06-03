@@ -1,11 +1,13 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import com.ar.edu.unq.futmarket.controllers.response.ApiGeneralResponse;
 import com.ar.edu.unq.futmarket.controllers.response.BootstrapResponse;
 import com.ar.edu.unq.futmarket.services.BootstrapService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,5 +24,11 @@ public class BootstrapController {
     @Operation(summary = "Initialize demo data", description = "Creates demo users, players, quotes and purchase orders when they are missing.")
     public ResponseEntity<BootstrapResponse> initializeDemoData() {
         return ResponseEntity.ok(bootstrapService.initializeDemoData());
+    }
+
+    @DeleteMapping("/all-data")
+    @Operation(summary = "Remove all data", description = "Deletes all users, players,) quotes and orders from the system. Use with caution.")
+    public ResponseEntity<ApiGeneralResponse> removeAllData() {
+        return ResponseEntity.ok(bootstrapService.removeAllData());
     }
 }

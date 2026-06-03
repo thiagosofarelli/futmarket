@@ -155,7 +155,6 @@ Authorization: Bearer <jwt>
 | POST | `/orders/buy` | Yes | Buy player tokens |
 | POST | `/orders/sell` | Yes | Sell player tokens |
 | GET | `/orders/user/{userId}` | Yes | Transaction history for a user |
-| GET | `/portfolios/user/{userId}` | Yes | User's current portfolio |
 | GET | `/users/{id}` | Yes | User profile |
 | GET | `/users/{id}/portfolio` | Yes | User portfolio (via users endpoint) |
 | GET | `/users/{id}/transactions` | Yes | User transaction history (via users endpoint) |

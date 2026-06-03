@@ -147,10 +147,10 @@ class UserTest {
     }
 
     @Test
-    void subBalance_moreThanBalance_clampsAtZero() {
+    void subBalance_moreThanBalance_throwsIllegalArgumentException() {
         user.setBalance(new BigDecimal("500.00"));
-        user.subBalance(new BigDecimal("9999.00"));
-        assertEquals(0, BigDecimal.ZERO.compareTo(user.getBalance()));
+        BigDecimal excessAmount = new BigDecimal("9999.00");
+        assertThrows(IllegalArgumentException.class, () -> user.subBalance(excessAmount));
     }
 
     @Test

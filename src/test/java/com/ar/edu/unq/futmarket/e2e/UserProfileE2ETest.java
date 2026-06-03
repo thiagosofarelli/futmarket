@@ -134,8 +134,8 @@ class UserProfileE2ETest {
         List<Map<String, Object>> positions = (List<Map<String, Object>>) portfolio.get("positions");
         assertThat(positions).isNotEmpty();
         boolean hasExpectedPlayer = positions.stream().anyMatch(pos -> {
-            Map<String, Object> player = (Map<String, Object>) pos.get("player");
-            return player != null && playerId.equals(((Number) player.get("id")).longValue());
+            Object idFromResponse = pos.get("playerId");
+            return idFromResponse != null && playerId.equals(((Number) idFromResponse).longValue());
         });
         assertThat(hasExpectedPlayer).isTrue();
     }

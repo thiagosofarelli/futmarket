@@ -75,7 +75,6 @@ class PlayerAndQuoteE2ETest {
         assertThat(player.name).isNotBlank();
         assertThat(player.playerPosition).isNotNull();
         assertThat(player.currentTokenPrice).isNotNull().isPositive();
-        assertThat(player.availableTokens).isBetween(0, 100);
     }
 
     @Test

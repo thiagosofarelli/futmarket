@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import com.ar.edu.unq.futmarket.controllers.dto.PortfolioDTO;
 import com.ar.edu.unq.futmarket.controllers.dto.UserDTO;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Portfolio;
@@ -10,6 +11,8 @@ import com.ar.edu.unq.futmarket.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +28,10 @@ public class UserController {
     private final ModelMapper modelMapper;
 
     @GetMapping("/{id}/portfolio")
-    public ResponseEntity<Portfolio> getPortfolio(@PathVariable Long id) {
-        return ResponseEntity.ok(portfolioService.findByUserId(id));
+    public ResponseEntity<PortfolioDTO> getPortfolio(@PathVariable Long id) {
+        User user = userService.findById(id);
+        PortfolioDTO dto = modelMapper.map(user.getPortfolio(), PortfolioDTO.class);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/transactions")
