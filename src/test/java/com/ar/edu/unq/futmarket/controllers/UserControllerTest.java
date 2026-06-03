@@ -1,6 +1,5 @@
 package com.ar.edu.unq.futmarket.controllers;
 
-import com.ar.edu.unq.futmarket.exception.PortfolioNotFoundException;
 import com.ar.edu.unq.futmarket.exception.UserNotFoundException;
 import com.ar.edu.unq.futmarket.model.Order;
 import com.ar.edu.unq.futmarket.model.Portfolio;
