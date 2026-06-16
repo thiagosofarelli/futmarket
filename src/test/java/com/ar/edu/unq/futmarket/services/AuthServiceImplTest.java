@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
@@ -76,18 +78,16 @@ class AuthServiceImplTest {
     }
 
     @Test
-    void loadUserByUsername_userWithNullPassword_returnsUserDetailsWithEmptyPassword() {
+    void loadUserByUsername_userWithNullPassword_returnsDataIntegrityViolationException() {
         User nullPasswordUser = User.builder()
                 .username("nullpassuser")
                 .balance(BigDecimal.ZERO)
                 .superuser(false)
                 .build();
         nullPasswordUser.setPassword(null);
-        userRepository.save(nullPasswordUser);
-
-        UserDetails userDetails = authService.loadUserByUsername("nullpassuser");
-        assertThat(userDetails).isNotNull();
-        assertThat(userDetails.getPassword()).isEqualTo("");
+        assertThrows(DataIntegrityViolationException.class, () -> {
+            userRepository.saveAndFlush(nullPasswordUser);
+        });
     }
 
     @Test
