@@ -15,6 +15,7 @@ A REST API that simulates a football player token market. Users can buy and sell
 - **JWT** authentication (jjwt 0.12.6)
 - **Maven** build tool
 - **Lombok**, **ModelMapper**, **SpringDoc OpenAPI 3**
+- **ArchUnit 1.3.0** (architecture tests)
 
 ---
 
@@ -181,7 +182,7 @@ Authorization: Bearer <jwt>
 mvn test
 ```
 
-Runs all tests except E2E. Uses an in-memory H2 database — no Docker required.
+Runs all tests except E2E, including architecture tests (ArchUnit). Uses an in-memory H2 database — no Docker required.
 
 ### Unit tests + E2E tests
 
@@ -204,6 +205,7 @@ src/main/java/com/ar/edu/unq/futmarket/
 └── adapters/           External API clients (Football-Data.org, WhoScored)
 
 src/test/java/com/ar/edu/unq/futmarket/
+├── architecture/       Architecture tests (ArchUnit)
 ├── e2e/                End-to-end tests (run with mvn verify)
 ├── controllers/        Controller unit tests (MockMvc)
 ├── services/           Service unit tests
