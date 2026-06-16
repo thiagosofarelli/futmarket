@@ -26,6 +26,7 @@ class UserRepositoryTest {
                 .balance(new BigDecimal("500.00"))
                 .superuser(false)
                 .build();
+        user.setPassword("password");
 
         userRepository.saveAndFlush(user);
 
@@ -43,6 +44,7 @@ class UserRepositoryTest {
                 .username("bob")
                 .balance(BigDecimal.TEN)
                 .build();
+        bob.setPassword("password");
         userRepository.saveAndFlush(bob);
 
         Optional<User> found = userRepository.findByUsername("bob");
@@ -57,13 +59,17 @@ class UserRepositoryTest {
 
     @Test
     void findBySuperuserTrue_returnsSuperuser() {
-        userRepository.saveAndFlush(User.builder().username("alice_normal").balance(BigDecimal.ZERO).build());
+        User normal = User.builder().username("alice_normal").balance(BigDecimal.ZERO).build();
+        normal.setPassword("password");
+        userRepository.saveAndFlush(normal);
 
-        userRepository.saveAndFlush(User.builder()
+        User superuser = User.builder()
                 .username("SUPERUSER_TEST")
                 .balance(BigDecimal.ZERO)
                 .superuser(true)
-                .build());
+                .build();
+        superuser.setPassword("password");
+        userRepository.saveAndFlush(superuser);
 
         Optional<User> found = userRepository.findBySuperuserTrue();
         assertThat(found).isPresent();
@@ -73,9 +79,12 @@ class UserRepositoryTest {
 
     @Test
     void username_mustBeUnique() {
-        userRepository.saveAndFlush(User.builder().username("duplicate").balance(BigDecimal.ZERO).build());
+        User duplicate = User.builder().username("duplicate").balance(BigDecimal.ZERO).build();
+        duplicate.setPassword("password");
+        userRepository.saveAndFlush(duplicate);
 
         User another = User.builder().username("duplicate").balance(BigDecimal.ZERO).build();
+        another.setPassword("password");
 
         assertThatThrownBy(() -> userRepository.saveAndFlush(another))
                 .isInstanceOf(Exception.class);
@@ -87,6 +96,7 @@ class UserRepositoryTest {
                 .username("  leandro  ")
                 .balance(BigDecimal.ZERO)
                 .build();
+        user.setPassword("password");
 
         userRepository.saveAndFlush(user);
 
