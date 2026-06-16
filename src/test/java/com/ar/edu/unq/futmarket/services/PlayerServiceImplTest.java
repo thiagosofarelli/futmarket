@@ -10,11 +10,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.cache.CacheManager;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
+@EnableCaching
 class PlayerServiceImplTest {
 
     @Autowired
@@ -32,6 +35,12 @@ class PlayerServiceImplTest {
     @Autowired
     private PlayerRepository playerRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
+    @Autowired
+    private QuoteService quoteService;
+
     private Player haaland;
     private Player lautaro;
     private Player saliba;
@@ -39,6 +48,10 @@ class PlayerServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        if (cacheManager.getCache("rankings") != null) {
+            cacheManager.getCache("rankings").clear();
+        }
+
         haaland = save(Player.builder()
                 .name("Haaland")
                 .team("Manchester City")
@@ -147,11 +160,38 @@ class PlayerServiceImplTest {
 
     @Test
     void getRanking_priceUpdated_reflectsNewOrder() {
+        // Note: For this test to succeed, cache is cleared in setUp() but within this test, 
+        // if we just update the repository directly, we must clear the cache manually since 
+        // the cache is not aware of direct DB updates.
         courtois.setCurrentTokenPrice(new BigDecimal("999.00"));
         playerRepository.save(courtois);
+        cacheManager.getCache("rankings").clear();
 
         Page<Player> ranking = playerService.getRanking(ALL);
         assertThat(ranking.getContent().get(0).getName()).isEqualTo("Courtois");
+    }
+
+    @Test
+    void getRanking_isCachedAndEvictedOnRecalculateAll() {
+        // 1. Initial call to getRanking (caches the result)
+        Page<Player> initialRanking = playerService.getRanking(ALL);
+        assertThat(initialRanking.getContent()).extracting(Player::getName)
+                .containsExactly("Haaland", "Lautaro", "Saliba", "Courtois");
+
+        // 2. Modify player directly in repository
+        courtois.setCurrentTokenPrice(new BigDecimal("999.00"));
+        playerRepository.save(courtois);
+
+        // 3. getRanking should still return cached result
+        Page<Player> cachedRanking = playerService.getRanking(ALL);
+        assertThat(cachedRanking.getContent().get(0).getName()).isEqualTo("Haaland");
+
+        // 4. Run QuoteService.recalculateAll (which evicts the cache)
+        quoteService.recalculateAll(com.ar.edu.unq.futmarket.model.enums.ValuationStrategy.GENERAL_PERFORMANCE);
+
+        // 5. getRanking should now return the fresh updated ranking
+        Page<Player> evictedRanking = playerService.getRanking(ALL);
+        assertThat(evictedRanking.getContent()).isNotSameAs(cachedRanking.getContent());
     }
 
     @Test
