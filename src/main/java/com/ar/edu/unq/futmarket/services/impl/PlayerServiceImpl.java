@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -61,6 +62,7 @@ public class PlayerServiceImpl implements PlayerService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
+    @Cacheable(value = "rankings", key = "{#pageable.pageNumber, #pageable.pageSize}")
     public Page<Player> getRanking(Pageable pageable) {
         Pageable ranked = PageRequest.of(
                 pageable.getPageNumber(),

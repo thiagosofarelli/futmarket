@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -47,6 +48,7 @@ public class QuoteServiceImpl implements QuoteService {
         this.recalculateAll(strategy);
     }
 
+    @CacheEvict(value = "rankings", allEntries = true)
     public void recalculateAll(ValuationStrategy strategy) {
         List<Player> players = playerRepository.findAll();
         QuoteService proxy = applicationContext.getBean(QuoteService.class);

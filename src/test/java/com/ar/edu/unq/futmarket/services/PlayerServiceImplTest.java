@@ -32,6 +32,9 @@ class PlayerServiceImplTest {
     @Autowired
     private PlayerRepository playerRepository;
 
+    @Autowired
+    private QuoteService quoteService;
+
     private Player haaland;
     private Player lautaro;
     private Player saliba;
@@ -153,6 +156,7 @@ class PlayerServiceImplTest {
         Page<Player> ranking = playerService.getRanking(ALL);
         assertThat(ranking.getContent().get(0).getName()).isEqualTo("Courtois");
     }
+
 
     @Test
     void getRanking_pagination_returnsCorrectPage() {
