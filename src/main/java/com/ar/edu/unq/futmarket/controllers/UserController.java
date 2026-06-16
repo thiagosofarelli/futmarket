@@ -1,9 +1,8 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import com.ar.edu.unq.futmarket.controllers.dto.OrderDTO;
 import com.ar.edu.unq.futmarket.controllers.dto.PortfolioDTO;
 import com.ar.edu.unq.futmarket.controllers.dto.UserDTO;
-import com.ar.edu.unq.futmarket.model.Order;
-import com.ar.edu.unq.futmarket.model.Portfolio;
 import com.ar.edu.unq.futmarket.model.User;
 import com.ar.edu.unq.futmarket.services.OrderService;
 import com.ar.edu.unq.futmarket.services.PortfolioService;
@@ -11,8 +10,6 @@ import com.ar.edu.unq.futmarket.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,8 +32,10 @@ public class UserController {
     }
 
     @GetMapping("/{id}/transactions")
-    public ResponseEntity<List<Order>> getTransactions(@PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getTransactionsByUserId(id));
+    public ResponseEntity<List<OrderDTO>> getTransactions(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getTransactionsByUserId(id).stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .toList());
     }
 
     @GetMapping("/{id}")
