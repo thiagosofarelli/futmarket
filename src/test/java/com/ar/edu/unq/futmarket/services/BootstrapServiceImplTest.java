@@ -1,9 +1,6 @@
 package com.ar.edu.unq.futmarket.services;
 
-import com.ar.edu.unq.futmarket.controllers.response.ApiGeneralResponse;
-import com.ar.edu.unq.futmarket.controllers.response.BootstrapResponse;
 import com.ar.edu.unq.futmarket.model.User;
-import com.ar.edu.unq.futmarket.model.Player;
 import com.ar.edu.unq.futmarket.repositories.OrderRepository;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.repositories.QuoteRepository;
@@ -14,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,7 +40,7 @@ class BootstrapServiceImplTest {
 
     @Test
     void initializeDemoData_emptyDatabase_createsAllDemoEntities() {
-        BootstrapResponse response = bootstrapService.initializeDemoData();
+        BootstrapResult response = bootstrapService.initializeDemoData();
 
         assertThat(response).isNotNull();
         assertThat(response.superuserCreated()).isTrue();
@@ -72,7 +67,7 @@ class BootstrapServiceImplTest {
         bootstrapService.initializeDemoData();
 
         // Second bootstrap run
-        BootstrapResponse secondResponse = bootstrapService.initializeDemoData();
+        BootstrapResult secondResponse = bootstrapService.initializeDemoData();
 
         assertThat(secondResponse).isNotNull();
         assertThat(secondResponse.superuserCreated()).isFalse();
@@ -96,9 +91,7 @@ class BootstrapServiceImplTest {
         assertThat(playerRepository.count()).isGreaterThan(0);
 
         // Now remove
-        ApiGeneralResponse removeResponse = bootstrapService.removeAllData();
-        assertThat(removeResponse).isNotNull();
-        assertThat(removeResponse.message()).isEqualTo("All data removed");
+        bootstrapService.removeAllData();
 
         assertThat(userRepository.count()).isEqualTo(0);
         assertThat(playerRepository.count()).isEqualTo(0);

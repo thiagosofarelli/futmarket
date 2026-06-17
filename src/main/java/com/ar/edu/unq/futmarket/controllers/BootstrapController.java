@@ -2,6 +2,7 @@ package com.ar.edu.unq.futmarket.controllers;
 
 import com.ar.edu.unq.futmarket.controllers.response.ApiGeneralResponse;
 import com.ar.edu.unq.futmarket.controllers.response.BootstrapResponse;
+import com.ar.edu.unq.futmarket.services.BootstrapResult;
 import com.ar.edu.unq.futmarket.services.BootstrapService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,12 +24,20 @@ public class BootstrapController {
     @PostMapping("/demo-data")
     @Operation(summary = "Initialize demo data", description = "Creates demo users, players, quotes and purchase orders when they are missing.")
     public ResponseEntity<BootstrapResponse> initializeDemoData() {
-        return ResponseEntity.ok(bootstrapService.initializeDemoData());
+        BootstrapResult result = bootstrapService.initializeDemoData();
+        return ResponseEntity.ok(new BootstrapResponse(
+                result.superuserCreated(),
+                result.usersCreated(),
+                result.playersCreated(),
+                result.ordersCreated(),
+                result.quotesCreated()
+        ));
     }
 
     @DeleteMapping("/all-data")
-    @Operation(summary = "Remove all data", description = "Deletes all users, players,) quotes and orders from the system. Use with caution.")
+    @Operation(summary = "Remove all data", description = "Deletes all users, players, quotes and orders from the system. Use with caution.")
     public ResponseEntity<ApiGeneralResponse> removeAllData() {
-        return ResponseEntity.ok(bootstrapService.removeAllData());
+        bootstrapService.removeAllData();
+        return ResponseEntity.ok(new ApiGeneralResponse("All data removed"));
     }
 }
