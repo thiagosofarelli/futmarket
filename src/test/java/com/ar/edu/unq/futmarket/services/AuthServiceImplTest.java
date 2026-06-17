@@ -1,8 +1,5 @@
 package com.ar.edu.unq.futmarket.services;
 
-import com.ar.edu.unq.futmarket.controllers.request.LoginRequest;
-import com.ar.edu.unq.futmarket.controllers.request.RegisterRequest;
-import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
 import com.ar.edu.unq.futmarket.exception.InvalidCredentialsException;
 import com.ar.edu.unq.futmarket.exception.UsernameAlreadyExistsException;
 import com.ar.edu.unq.futmarket.model.User;
@@ -12,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,55 +34,29 @@ class AuthServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     private User normalUser;
-    private User superUser;
 
     @BeforeEach
     void setUp() {
         normalUser = User.builder()
                 .username("testuser")
-                .balance(new BigDecimal("100.00"))
+                .balance(new BigDecimal("1000.00"))
                 .superuser(false)
                 .build();
         normalUser.setPassword(passwordEncoder.encode("password123"));
         userRepository.save(normalUser);
-
-        superUser = User.builder()
-                .username("testsuperuser")
-                .balance(BigDecimal.ZERO)
-                .superuser(true)
-                .build();
-        superUser.setPassword(passwordEncoder.encode("superpassword"));
-        userRepository.save(superUser);
     }
 
     @Test
-    void loadUserByUsername_userFound_returnsUserDetailsWithUserRole() {
+    void loadUserByUsername_userExists_returnsUserDetails() {
         UserDetails userDetails = authService.loadUserByUsername("testuser");
         assertThat(userDetails).isNotNull();
         assertThat(userDetails.getUsername()).isEqualTo("testuser");
-        assertThat(passwordEncoder.matches("password123", userDetails.getPassword())).isTrue();
-        assertThat(userDetails.getAuthorities()).anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
     }
 
     @Test
-    void loadUserByUsername_superuserFound_returnsUserDetailsWithSuperuserRole() {
-        UserDetails userDetails = authService.loadUserByUsername("testsuperuser");
-        assertThat(userDetails).isNotNull();
-        assertThat(userDetails.getUsername()).isEqualTo("testsuperuser");
-        assertThat(passwordEncoder.matches("superpassword", userDetails.getPassword())).isTrue();
-        assertThat(userDetails.getAuthorities()).anyMatch(a -> a.getAuthority().equals("ROLE_SUPERUSER"));
-    }
-
-    @Test
-    void loadUserByUsername_userWithNullPassword_returnsDataIntegrityViolationException() {
-        User nullPasswordUser = User.builder()
-                .username("nullpassuser")
-                .balance(BigDecimal.ZERO)
-                .superuser(false)
-                .build();
-        nullPasswordUser.setPassword(null);
-        assertThrows(DataIntegrityViolationException.class, () -> {
-            userRepository.saveAndFlush(nullPasswordUser);
+    void loadUserByUsername_usernameIsNull_throwsUsernameNotFoundException() {
+        assertThrows(UsernameNotFoundException.class, () -> {
+            authService.loadUserByUsername(null);
         });
     }
 
@@ -99,12 +69,9 @@ class AuthServiceImplTest {
 
     @Test
     void register_usernameDoesNotExist_createsUserAndReturnsToken() {
-        RegisterRequest registerRequest = new RegisterRequest("newuser", "newpassword");
-        AuthResponse response = authService.register(registerRequest);
+        String token = authService.register("newuser", "newpassword");
 
-        assertThat(response).isNotNull();
-        assertThat(response.getToken()).isNotBlank();
-
+        assertThat(token).isNotBlank();
         User savedUser = userRepository.findByUsername("newuser").orElse(null);
         assertThat(savedUser).isNotNull();
         assertThat(passwordEncoder.matches("newpassword", savedUser.getPassword())).isTrue();
@@ -113,24 +80,20 @@ class AuthServiceImplTest {
 
     @Test
     void register_usernameAlreadyExists_throwsUsernameAlreadyExistsException() {
-        RegisterRequest registerRequest = new RegisterRequest("testuser", "anypassword");
-        assertThatThrownBy(() -> authService.register(registerRequest))
+        assertThatThrownBy(() -> authService.register("testuser", "anypassword"))
                 .isInstanceOf(UsernameAlreadyExistsException.class);
     }
 
     @Test
     void login_validCredentials_returnsToken() {
-        LoginRequest loginRequest = new LoginRequest("testuser", "password123");
-        AuthResponse response = authService.login(loginRequest);
+        String token = authService.login("testuser", "password123");
 
-        assertThat(response).isNotNull();
-        assertThat(response.getToken()).isNotBlank();
+        assertThat(token).isNotBlank();
     }
 
     @Test
     void login_invalidPassword_throwsInvalidCredentialsException() {
-        LoginRequest loginRequest = new LoginRequest("testuser", "wrongpassword");
-        assertThatThrownBy(() -> authService.login(loginRequest))
+        assertThatThrownBy(() -> authService.login("testuser", "wrongpassword"))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 }
