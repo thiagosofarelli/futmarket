@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
+import com.ar.edu.unq.futmarket.controllers.dto.QuoteDTO;
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 
 import lombok.RequiredArgsConstructor;
@@ -62,9 +62,11 @@ public class PlayerController {
     }
 
     @GetMapping("/{id}/quotes")
-    public ResponseEntity<List<Quote>> getPlayerQuotes(@PathVariable Long id) {
+    public ResponseEntity<List<QuoteDTO>> getPlayerQuotes(@PathVariable Long id) {
         playerService.findById(id);
-        return ResponseEntity.ok(quoteService.findByPlayerId(id));
+        return ResponseEntity.ok(quoteService.findByPlayerId(id).stream()
+                .map(q -> modelMapper.map(q, QuoteDTO.class))
+                .toList());
     }
 
     @PostMapping("/sync")

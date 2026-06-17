@@ -5,8 +5,9 @@ import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.ValuationStrategy;
 import com.ar.edu.unq.futmarket.repositories.PlayerRepository;
 import com.ar.edu.unq.futmarket.repositories.QuoteRepository;
-import com.ar.edu.unq.futmarket.services.PlayerService;
 import com.ar.edu.unq.futmarket.services.QuoteService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,6 +29,7 @@ public class QuoteServiceImpl implements QuoteService {
     private final QuoteRepository quoteRepository;
     private final PlayerRepository playerRepository;
     private final ApplicationContext applicationContext;
+    private final MeterRegistry meterRegistry;
 
     @Value("${futmarket.valuation.base-value:1.0}")
     private double baseValue;
@@ -45,6 +48,7 @@ public class QuoteServiceImpl implements QuoteService {
         this.recalculateAll(strategy);
     }
 
+    @CacheEvict(value = "rankings", allEntries = true)
     public void recalculateAll(ValuationStrategy strategy) {
         List<Player> players = playerRepository.findAll();
         QuoteService proxy = applicationContext.getBean(QuoteService.class);
@@ -78,6 +82,13 @@ public class QuoteServiceImpl implements QuoteService {
         quote.setStrategy(strategy);
         quote.setScore(score);
         quoteRepository.save(quote);
+
+        Counter.builder("futmarket_cotizaciones_recalculos_total")
+                .description("Cantidad total de recalculos de cotizaciones individuales generados")
+                .tag("strategy", strategy.name())
+                .tag("position", player.getPlayerPosition().name())
+                .register(meterRegistry)
+                .increment();
     }
 
     private double calculateScore(Player player, ValuationStrategy strategy) {

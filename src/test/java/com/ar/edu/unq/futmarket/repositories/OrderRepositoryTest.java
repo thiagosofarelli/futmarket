@@ -34,16 +34,20 @@ class OrderRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = userRepository.save(User.builder()
+        User aliceBuilder = User.builder()
                 .username("alice")
                 .balance(new BigDecimal("1000.00"))
-                .build());
+                .build();
+        aliceBuilder.setPassword("password");
+        alice = userRepository.save(aliceBuilder);
 
-        superuser = userRepository.save(User.builder()
+        User superuserBuilder = User.builder()
                 .username("SUPERUSER")
                 .balance(BigDecimal.ZERO)
                 .superuser(true)
-                .build());
+                .build();
+        superuserBuilder.setPassword("password");
+        superuser = userRepository.save(superuserBuilder);
 
         messi = playerRepository.save(Player.builder()
                 .name("Messi")

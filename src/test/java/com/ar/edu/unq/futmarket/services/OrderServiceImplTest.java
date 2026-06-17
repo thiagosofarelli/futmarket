@@ -43,8 +43,13 @@ class OrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        superuser = userRepository.save(User.builder().username("SUPERUSER").balance(BigDecimal.ZERO).superuser(true).build());
-        alice = userRepository.save(User.builder().username("alice").balance(new BigDecimal("1000.00")).superuser(false).build());
+        User superuserBuilder = User.builder().username("SUPERUSER").balance(BigDecimal.ZERO).superuser(true).build();
+        superuserBuilder.setPassword("password");
+        superuser = userRepository.save(superuserBuilder);
+
+        User aliceBuilder = User.builder().username("alice").balance(new BigDecimal("1000.00")).superuser(false).build();
+        aliceBuilder.setPassword("password");
+        alice = userRepository.save(aliceBuilder);
         messi = playerRepository.save(Player.builder().name("Messi").team("Team A").league("League A").playerPosition(PlayerPosition.FORWARD).currentTokenPrice(new BigDecimal("10.00")).build());
 
         Position superuserPosition = new Position();

@@ -31,16 +31,20 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        alice = userRepository.save(User.builder()
+        User aliceBuilder = User.builder()
                 .username("alice")
                 .balance(new BigDecimal("500.00"))
                 .superuser(false)
-                .build());
-        superuser = userRepository.save(User.builder()
+                .build();
+        aliceBuilder.setPassword("password");
+        alice = userRepository.saveAndFlush(aliceBuilder);
+        User superuserBuilder = User.builder()
                 .username("SUPERUSER")
                 .balance(BigDecimal.ZERO)
                 .superuser(true)
-                .build());
+                .build();
+        superuserBuilder.setPassword("superpassword");
+        superuser = userRepository.saveAndFlush(superuserBuilder);
     }
 
     @Test

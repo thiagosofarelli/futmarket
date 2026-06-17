@@ -24,7 +24,7 @@ public class User {
     private String username;
 
     @JsonIgnore
-    @Column
+    @Column(nullable = false)
     private String password;
 
     @OneToOne(optional = false, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
