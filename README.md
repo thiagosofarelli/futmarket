@@ -14,7 +14,7 @@ A REST API that simulates a football player token market. Users can buy and sell
 - **H2** (in-memory, test scope only)
 - **JWT** authentication (jjwt 0.12.6)
 - **Maven** build tool
-- **Lombok**, **ModelMapper**, **SpringDoc OpenAPI 3**
+- **Lombok**, **ModelMapper**, **SpringDoc OpenAPI 3**, **Log4j2**
 - **ArchUnit 1.3.0** (architecture tests)
 
 ---
@@ -84,6 +84,21 @@ mvn spring-boot:run
 ```
 
 The API will be available at `http://localhost:8080`.
+
+### HTTP Audit Log
+
+Every incoming HTTP request is written to `logs/audit.log` using a Spring MVC `HandlerInterceptor` and a dedicated Log4j2 file appender.
+
+Each audit entry includes:
+
+- Timestamp
+- HTTP method
+- Request URI
+- Response status code
+- Execution time
+- Client IP
+
+This audit trail is file-based only and is not persisted in the database.
 
 ---
 
