@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,6 +23,14 @@ public class RequestAuditInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    private String getUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            return auth.getName();
+        }
+        return "anonymous";
+    }
+
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         Object startTimeAttribute = request.getAttribute(START_TIME_ATTRIBUTE);
@@ -36,12 +46,13 @@ public class RequestAuditInterceptor implements HandlerInterceptor {
         }
 
         AUDIT_LOGGER.info(
-                "method={} uri={} status={} executionTimeMs={} clientIp={}",
+                "method={} uri={} status={} executionTimeMs={} clientIp={} username={}",
                 request.getMethod(),
                 uri,
                 response.getStatus(),
                 executionTimeMs,
-                resolveClientIp(request)
+                resolveClientIp(request),
+                getUsername()
         );
     }
 
