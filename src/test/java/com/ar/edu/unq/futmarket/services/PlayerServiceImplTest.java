@@ -168,6 +168,30 @@ class PlayerServiceImplTest {
                 .containsExactly("Haaland", "Lautaro");
     }
 
+    @Test
+    void findByFilters_byTeamAndPosition_returnsMatchingPlayers() {
+        List<Player> result = playerService.findByFilters(null, "Arsenal FC", PlayerPosition.DEFENDER, ALL).getContent();
+        assertThat(result).hasSize(1)
+                .extracting(Player::getName)
+                .containsExactly("Saliba");
+    }
+
+    @Test
+    void findByFilters_byLeagueAndTeamAndPosition_narrowsToSingle() {
+        List<Player> result = playerService.findByFilters(League.PL, "Arsenal FC", PlayerPosition.DEFENDER, ALL).getContent();
+        assertThat(result).hasSize(1)
+                .extracting(Player::getName)
+                .containsExactly("Saliba");
+    }
+
+    @Test
+    void findByFilters_blankTeam_treatedAsNoTeamFilter() {
+        List<Player> result = playerService.findByFilters(League.PL, "  ", null, ALL).getContent();
+        assertThat(result).hasSize(2)
+                .extracting(Player::getName)
+                .containsExactlyInAnyOrder("Haaland", "Saliba");
+    }
+
     private Player save(Player p) {
         return playerRepository.save(p);
     }

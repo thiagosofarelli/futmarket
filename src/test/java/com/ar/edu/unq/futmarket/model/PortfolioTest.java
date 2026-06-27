@@ -230,4 +230,42 @@ class PortfolioTest {
     void getPosition_playerWithoutPosition_returnsEmpty() {
         assertTrue(portfolio.getPosition(player).isEmpty());
     }
+
+    // --- edge cases ---
+
+    @Test
+    void registerPurchase_superuserDoesNotHavePosition_throws() {
+        Player unknown = Player.builder()
+                .name("Neymar")
+                .team("Al Hilal")
+                .league("Saudi Pro League")
+                .playerPosition(PlayerPosition.FORWARD)
+                .build();
+        unknown.setCurrentTokenPrice(new java.math.BigDecimal("5.00"));
+        // superuser has no position for 'unknown'
+        assertThrows(com.ar.edu.unq.futmarket.exception.SuperuserDoesntHaveThatPositionException.class,
+                () -> portfolio.registerPurchase(unknown, 3, superuser));
+    }
+
+    @Test
+    void registerPurchase_allSuperuserTokens_removesSuperuserPosition() {
+        portfolio.registerPurchase(player, 100, superuser);
+        assertTrue(superuser.getPortfolio().getPosition(player).isEmpty());
+    }
+
+    @Test
+    void registerSell_nullTokenPrice_throws() {
+        portfolio.registerPurchase(player, 5, superuser);
+        player.setCurrentTokenPrice(null);
+        assertThrows(com.ar.edu.unq.futmarket.exception.InvalidTokenPriceException.class,
+                () -> portfolio.registerSell(player, 3, superuser));
+    }
+
+    @Test
+    void registerSell_zeroTokenPrice_throws() {
+        portfolio.registerPurchase(player, 5, superuser);
+        player.setCurrentTokenPrice(java.math.BigDecimal.ZERO);
+        assertThrows(com.ar.edu.unq.futmarket.exception.InvalidTokenPriceException.class,
+                () -> portfolio.registerSell(player, 3, superuser));
+    }
 }
