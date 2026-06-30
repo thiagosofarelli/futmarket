@@ -2,20 +2,17 @@
 
 A REST API that simulates a football player token market. Users can buy and sell player tokens whose value changes over time based on configurable valuation strategies.
 
-[![Java CI with Maven](https://github.com/thiagosofarelli/futmarket/actions/workflows/ci.yml/badge.svg)](https://github.com/thiagosofarelli/futmarket/actions/workflows/ci.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thiagosofarelli_futmarket&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=thiagosofarelli_futmarket)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=thiagosofarelli_futmarket&metric=coverage)](https://sonarcloud.io/summary/new_code?id=thiagosofarelli_futmarket)
-
 ## Tech Stack
 
 - **Java 17**
-- **Spring Boot 4.0.5** (Web, Security, Data JPA, Validation, Docker Compose)
+- **Spring Boot 4.0.5** (Web, Security, Data JPA, Validation, Docker Compose, Cache, Actuator)
 - **PostgreSQL 16** (via Docker)
 - **H2** (in-memory, test scope only)
 - **JWT** authentication (jjwt 0.12.6)
 - **Maven** build tool
 - **Lombok**, **ModelMapper**, **SpringDoc OpenAPI 3**, **Log4j2**
 - **ArchUnit 1.3.0** (architecture tests)
+- **Prometheus** & **Micrometer** (metrics & monitoring)
 
 ---
 
@@ -97,8 +94,17 @@ Each audit entry includes:
 - Response status code
 - Execution time
 - Client IP
+- Username (if authenticated)
 
 This audit trail is file-based only and is not persisted in the database.
+
+### Metrics & Monitoring
+
+Application metrics are collected via Spring Boot Actuator and exposed on:
+- Actuator: `http://localhost:8080/actuator`
+- Prometheus Metrics: `http://localhost:8080/actuator/prometheus`
+
+A Prometheus container is configured in `compose.yaml` to scrape these metrics and is accessible at `http://localhost:9090`.
 
 ---
 
@@ -175,7 +181,7 @@ Authorization: Bearer <jwt>
 | GET    | `/users/{id}/portfolio`      | No              | User portfolio (via users endpoint) |
 | GET    | `/users/{id}/transactions`   | No              | User transaction history (via users endpoint) |
 | POST   | `/admin/bootstrap/demo-data` | No              | Seed demo data |
-| DELETE | `/admin/bootstrap/all-data`  | No              | Seed demo data |
+| DELETE | `/admin/bootstrap/all-data`  | No              | Remove all data |
 
 **Buy/sell request body:**
 ```json

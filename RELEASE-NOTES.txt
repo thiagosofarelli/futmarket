@@ -1,11 +1,13 @@
 ---------------------------------------------------------------------
-TAG desapp_grupoB_futmarket_entrega2-1.1
+TAG desapp_grupoB_futmarket_entrega3-1.0
 ---------------------------------------------------------------------
 NEW FEATURES:
-* Added administrative bootstrap endpoints (`/admin/bootstrap`) to initialize demo data (users, players, quotes, orders) and wipe the database when needed.
-* Updated transaction and domain logic so the superuser initially owns all player tokens and acts as the counterparty for user purchases and sales.
-* Configured JaCoCo for code coverage report generation, fully integrated with SonarCloud in the CI pipeline.
-* Implemented end-to-end (E2E) integration tests using a dedicated Spring test profile to isolate the test environment.
+* Spring Cache integration for player ranking (evicted on quote recalculation).
+* Prometheus monitoring integration via Spring Boot Actuator.
+* Log4j2 HTTP audit logging with username tracking for authenticated requests.
+* Decoupled architecture using ArchUnit tests to enforce service/DTO separation.
+* Data synchronization filter restricting Football-Data API sync to the 2025 season.
+* Unit, repository, controller, and E2E test coverage elevated to >80%.
 
 NOTES:
 * The application is prepared to run with Docker Compose and exposes the backend on port 8080.
@@ -14,8 +16,6 @@ NOTES:
 * Unit and repository tests are provided to validate the domain, services and external synchronization.
 
 KNOWN ISSUES:
-* The player ranking endpoint currently lacks pagination, which may impact performance as the database grows.
-* Certain endpoints still expose entity models directly and require the implementation of dedicated DTOs to improve data encapsulation.
 * Statistics synchronization may depend on the external site and return partial results if WhoScored changes its HTML structure.
 * Scraping requires a compatible browser and driver; in some environments it may fail if Chrome or Selenium are not properly configured.
 * Some players loaded during initialization do not have statistics available on WhoScored, which may result in incomplete data for those cases.
