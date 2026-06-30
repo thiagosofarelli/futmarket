@@ -77,7 +77,7 @@ This starts a PostgreSQL 16 container:
 ### 4. Run the application
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 The API will be available at `http://localhost:8080`.
