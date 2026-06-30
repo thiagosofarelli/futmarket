@@ -56,7 +56,7 @@ public class FootballDataClient {
             waitIfNeeded(lastCallStartedAt, minimumIntervalMillis);
             lastCallStartedAt = System.currentTimeMillis();
 
-            String url = BASE_URL + "/competitions/" + code + "/teams";
+            String url = BASE_URL + "/competitions/" + code + "/teams?season=2025";
             try {
                 ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
                 System.out.println(response.getBody());
@@ -80,7 +80,7 @@ public class FootballDataClient {
                     }
                 }
             } catch (RestClientException ex) {
-                // Silently skip if league fetch fails
+                log.error("Falló al sincronizar la liga {}: {}", code, ex.getMessage());
             }
         }
     }
