@@ -1,16 +1,13 @@
 ---------------------------------------------------------------------
-TAG desapp_grupoB_futmarket_entrega1-1.0
+TAG desapp_grupoB_futmarket_entrega3-1.0
 ---------------------------------------------------------------------
 NEW FEATURES:
-* User authentication with registration and login, returning JWT.
-* User management, including detail lookup, portfolio and transactions.
-* Player catalog with filters by league, team and position, plus ranking by current price.
-* Player detail view and quote history retrieval.
-* Buying and selling of tokens, updating balance, portfolio, positions and token availability.
-* Full persistence with Spring Data JPA on PostgreSQL, with H2 support for tests.
-* Centralized error handling with `RestExceptionHandler` and `ApiError` responses.
-* Initial player loading from the Football-Data API.
-* Synchronization of player statistics from WhoScored using Selenium.
+* Spring Cache integration for player ranking (evicted on quote recalculation).
+* Prometheus monitoring integration via Spring Boot Actuator.
+* Log4j2 HTTP audit logging with username tracking for authenticated requests.
+* Decoupled architecture using ArchUnit tests to enforce service/DTO separation.
+* Data synchronization filter restricting Football-Data API sync to the 2025 season.
+* Unit, repository, controller, and E2E test coverage elevated to >80%.
 
 NOTES:
 * The application is prepared to run with Docker Compose and exposes the backend on port 8080.
