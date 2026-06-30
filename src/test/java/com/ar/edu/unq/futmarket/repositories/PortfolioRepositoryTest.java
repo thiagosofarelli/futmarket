@@ -39,11 +39,14 @@ class PortfolioRepositoryTest {
                 .balance(new BigDecimal("1000000.00"))
                 .superuser(true)
                 .build();
+        superuser.setPassword("password");
+
         alice = User.builder()
                 .username("alice")
                 .balance(new BigDecimal("10000.00"))
                 .superuser(false)
                 .build();
+        alice.setPassword("password");
 
         alice = userRepository.saveAndFlush(alice);
         superuser = userRepository.saveAndFlush(superuser);

@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.config;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -9,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableAsync
+@EnableCaching
 public class ApplicationConfig {
 
     @Bean

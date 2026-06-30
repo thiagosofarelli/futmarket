@@ -86,15 +86,17 @@ class PlayerControllerTest {
     }
 
     @Test
-    void getRanking_returns200WithList() throws Exception {
-        when(playerService.getRanking()).thenReturn(List.of(
-                buildPlayer("Haaland"),
-                buildPlayer("Saliba")));
+    void getRanking_returns200WithPage() throws Exception {
+        when(playerService.getRanking(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(
+                        buildPlayer("Haaland"),
+                        buildPlayer("Saliba"))));
 
         mockMvc.perform(get("/players/ranking"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].name").value("Haaland"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value("Haaland"))
+                .andExpect(jsonPath("$.totalElements").value(2));
     }
 
     @Test

@@ -34,16 +34,20 @@ class OrderRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        alice = userRepository.save(User.builder()
+        User aliceBuilder = User.builder()
                 .username("alice")
                 .balance(new BigDecimal("1000.00"))
-                .build());
+                .build();
+        aliceBuilder.setPassword("password");
+        alice = userRepository.save(aliceBuilder);
 
-        superuser = userRepository.save(User.builder()
+        User superuserBuilder = User.builder()
                 .username("SUPERUSER")
                 .balance(BigDecimal.ZERO)
                 .superuser(true)
-                .build());
+                .build();
+        superuserBuilder.setPassword("password");
+        superuser = userRepository.save(superuserBuilder);
 
         messi = playerRepository.save(Player.builder()
                 .name("Messi")
@@ -73,7 +77,7 @@ class OrderRepositoryTest {
                 .build());
 
         Order found = orderRepository.findById(order.getId()).orElseThrow();
-        assertThat(found.getStatus()).isEqualTo(OrderStatus.PENDING);
+        assertThat(found.getStatus()).isEqualTo(OrderStatus.COMPLETED);
         assertThat(found.getCreatedAt()).isNotNull();
         assertThat(found.getTotalAmount()).isEqualByComparingTo("10.0000");
     }

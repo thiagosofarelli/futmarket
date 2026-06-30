@@ -14,7 +14,8 @@ A REST API that simulates a football player token market. Users can buy and sell
 - **H2** (in-memory, test scope only)
 - **JWT** authentication (jjwt 0.12.6)
 - **Maven** build tool
-- **Lombok**, **ModelMapper**, **SpringDoc OpenAPI 3**
+- **Lombok**, **ModelMapper**, **SpringDoc OpenAPI 3**, **Log4j2**
+- **ArchUnit 1.3.0** (architecture tests)
 
 ---
 
@@ -84,6 +85,21 @@ mvn spring-boot:run
 
 The API will be available at `http://localhost:8080`.
 
+### HTTP Audit Log
+
+Every incoming HTTP request is written to `logs/audit.log` using a Spring MVC `HandlerInterceptor` and a dedicated Log4j2 file appender.
+
+Each audit entry includes:
+
+- Timestamp
+- HTTP method
+- Request URI
+- Response status code
+- Execution time
+- Client IP
+
+This audit trail is file-based only and is not persisted in the database.
+
 ---
 
 ## API Documentation
@@ -142,23 +158,24 @@ Authorization: Bearer <jwt>
 
 ## API Endpoints
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/auth/register` | No | Register a new user |
-| POST | `/auth/login` | No | Login and get JWT |
-| GET | `/players` | Yes | List players (filter by `league`, `team`, `playerPosition`; paginated) |
-| GET | `/players/ranking` | Yes | Players ranked by token price |
-| GET | `/players/{id}` | Yes | Single player detail |
-| GET | `/players/{id}/quotes` | Yes | Quote history for a player |
-| POST | `/quotes/recalculate` | Yes | Trigger quote recalculation (`strategy`: `GENERAL_PERFORMANCE` or `POSITION_WEIGHTED`) |
-| GET | `/quotes/player/{id}` | Yes | Quotes for a player via quotes endpoint |
-| POST | `/orders/buy` | Yes | Buy player tokens |
-| POST | `/orders/sell` | Yes | Sell player tokens |
-| GET | `/orders/user/{userId}` | Yes | Transaction history for a user |
-| GET | `/users/{id}` | Yes | User profile |
-| GET | `/users/{id}/portfolio` | Yes | User portfolio (via users endpoint) |
-| GET | `/users/{id}/transactions` | Yes | User transaction history (via users endpoint) |
-| POST | `/admin/bootstrap/demo-data` | No | Seed demo data |
+| Method | Endpoint                     | Auth            | Description |
+|--------|------------------------------|-----------------|-------------|
+| POST   | `/auth/register`             | No              | Register a new user |
+| POST   | `/auth/login`                | No              | Login and get JWT |
+| GET    | `/players`                   | No              | List players (filter by `league`, `team`, `playerPosition`; paginated) |
+| GET    | `/players/ranking`           | No              | Players ranked by token price |
+| GET    | `/players/{id}`              | No              | Single player detail |
+| GET    | `/players/{id}/quotes`       | No              | Quote history for a player |
+| POST   | `/quotes/recalculate`        | No              | Trigger quote recalculation (`strategy`: `GENERAL_PERFORMANCE` or `POSITION_WEIGHTED`) |
+| GET    | `/quotes/player/{id}`        | No              | Quotes for a player via quotes endpoint |
+| POST   | `/orders/buy`                | Yes (USER role) | Buy player tokens |
+| POST   | `/orders/sell`               | Yes (USER role  | Sell player tokens |
+| GET    | `/orders/user/{userId}`      | No              | Transaction history for a user |
+| GET    | `/users/{id}`                | No              | User profile |
+| GET    | `/users/{id}/portfolio`      | No              | User portfolio (via users endpoint) |
+| GET    | `/users/{id}/transactions`   | No              | User transaction history (via users endpoint) |
+| POST   | `/admin/bootstrap/demo-data` | No              | Seed demo data |
+| DELETE | `/admin/bootstrap/all-data`  | No              | Seed demo data |
 
 **Buy/sell request body:**
 ```json
@@ -180,7 +197,7 @@ Authorization: Bearer <jwt>
 mvn test
 ```
 
-Runs all tests except E2E. Uses an in-memory H2 database — no Docker required.
+Runs all tests except E2E, including architecture tests (ArchUnit). Uses an in-memory H2 database — no Docker required.
 
 ### Unit tests + E2E tests
 
@@ -203,6 +220,7 @@ src/main/java/com/ar/edu/unq/futmarket/
 └── adapters/           External API clients (Football-Data.org, WhoScored)
 
 src/test/java/com/ar/edu/unq/futmarket/
+├── architecture/       Architecture tests (ArchUnit)
 ├── e2e/                End-to-end tests (run with mvn verify)
 ├── controllers/        Controller unit tests (MockMvc)
 ├── services/           Service unit tests

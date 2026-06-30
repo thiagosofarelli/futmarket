@@ -1,6 +1,5 @@
 package com.ar.edu.unq.futmarket.controllers;
 
-import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
 import com.ar.edu.unq.futmarket.exception.InvalidCredentialsException;
 import com.ar.edu.unq.futmarket.exception.UsernameAlreadyExistsException;
 import com.ar.edu.unq.futmarket.services.impl.AuthServiceImpl;
@@ -17,7 +16,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,7 +44,7 @@ class AuthControllerTest {
 
     @Test
     void register_validRequest_returns201WithToken() throws Exception {
-        when(authService.register(any())).thenReturn(new AuthResponse("jwt-token-123"));
+        when(authService.register(anyString(), anyString())).thenReturn("jwt-token-123");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -56,7 +55,7 @@ class AuthControllerTest {
 
     @Test
     void register_duplicateUsername_returns409() throws Exception {
-        when(authService.register(any())).thenThrow(new UsernameAlreadyExistsException());
+        when(authService.register(anyString(), anyString())).thenThrow(new UsernameAlreadyExistsException());
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -66,7 +65,7 @@ class AuthControllerTest {
 
     @Test
     void login_validCredentials_returns200WithToken() throws Exception {
-        when(authService.login(any())).thenReturn(new AuthResponse("jwt-token-456"));
+        when(authService.login(anyString(), anyString())).thenReturn("jwt-token-456");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +76,7 @@ class AuthControllerTest {
 
     @Test
     void login_invalidCredentials_returns401() throws Exception {
-        when(authService.login(any())).thenThrow(new InvalidCredentialsException());
+        when(authService.login(anyString(), anyString())).thenThrow(new InvalidCredentialsException());
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

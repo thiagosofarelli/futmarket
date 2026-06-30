@@ -101,16 +101,27 @@ paths:
   /players/ranking:
     get:
       summary: Player ranking
-      description: Returns the ranking based on current price.
+      description: Returns the ranking based on current price with pagination.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+          description: Page number (0-indexed).
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page.
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PlayerDTO'
+                $ref: '#/components/schemas/PagePlayerDTO'
   /players/{id}:
     get:
       summary: Player details
@@ -243,6 +254,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Forbidden - Requires an authenticated user with USER role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
   /orders/sell:
     post:
       summary: Sell tokens
@@ -261,7 +278,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrderDTO'
         '400':
-          description: Invalid request or insufficient tokens
+          description: Invalid request or insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Forbidden - Requires an authenticated user with USER role
           content:
             application/json:
               schema:
@@ -363,12 +386,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BootstrapResponse'
-        '400':
-          description: Bad Request
+  /admin/bootstrap/all-data:
+    delete:
+      summary: Reset all data
+      description: Deletes all users, players, quotes and orders. Use with caution.
+      tags:
+        - Bootstrap
+      responses:
+        '200':
+          description: OK
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
+             schema:
+              $ref: '#/components/schemas/ApiGeneralResponse'
 components:
   schemas:
     League:
@@ -382,7 +412,7 @@ components:
       enum: [BUY, SELL]
     OrderStatus:
       type: string
-      enum: [PENDING, COMPLETED, FAILED]
+      enum: [COMPLETED]
     ValuationStrategy:
       type: string
       enum: [GENERAL_PERFORMANCE, POSITION_WEIGHTED]
@@ -498,15 +528,13 @@ components:
         rating:
           type: number
           format: double
-        availableTokens:
-          type: integer
         lastStatsSync:
           type: string
           format: date-time
           nullable: true
         externalId:
           type: string
-      required: [id, name, league, team, playerPosition, currentTokenPrice, availableTokens]
+      required: [id, name, league, team, playerPosition, currentTokenPrice]
     QuoteDTO:
       type: object
       properties:
@@ -623,8 +651,6 @@ components:
         playerPosition:
           $ref: '#/components/schemas/PlayerPosition'
         issuedTokens:
-          type: integer
-        availableTokens:
           type: integer
         currentTokenPrice:
           type: number
@@ -772,6 +798,12 @@ components:
           type: string
           nullable: true
       required: [timestamp, status, error, message]
+    ApiGeneralResponse:
+        type: object
+        properties:
+          message:
+            type: string
+        required: [message]
     BootstrapResponse:
       type: object
       properties:
@@ -790,17 +822,4 @@ components:
         ordersCreated:
           type: integer
           description: Number of sample orders created.
-        demoUsers:
-          type: array
-          items:
-            type: object
-            properties:
-              username:
-                type: string
-              password:
-                type: string
-              initialBalance:
-                type: number
-                format: double
-          description: List of created demo users with their credentials.
       required: [message, usersCreated, playersLoaded]

@@ -97,7 +97,7 @@ class PlayerAndQuoteE2ETest {
 
     @Test
     void getRanking_returnsPlayersOrderedByPrice() {
-        ResponseEntity<List<PlayerDTO>> response = restTemplate.exchange(
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
             rankingUrl(),
             HttpMethod.GET,
             new HttpEntity<>(authHeaders()),
@@ -105,7 +105,10 @@ class PlayerAndQuoteE2ETest {
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<PlayerDTO> ranking = response.getBody();
+        List<Map<String, Object>> content = (List<Map<String, Object>>) response.getBody().get("content");
+        List<PlayerDTO> ranking = content.stream()
+            .map(item -> objectMapper.convertValue(item, PlayerDTO.class))
+            .toList();
         assertThat(ranking).isNotEmpty();
 
         for (PlayerDTO player : ranking) {

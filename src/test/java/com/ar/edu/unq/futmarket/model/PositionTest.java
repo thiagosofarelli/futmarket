@@ -1,5 +1,6 @@
 package com.ar.edu.unq.futmarket.model;
 
+import com.ar.edu.unq.futmarket.exception.*;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,33 +57,33 @@ class PositionTest {
     @Test
     void registerPurchase_zeroQuantity_throws() {
         BigDecimal price = new BigDecimal("5.00");
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenQuantityException.class,
                 () -> position.registerPurchase(0, price));
     }
 
     @Test
     void registerPurchase_negativeQuantity_throws() {
         BigDecimal price = new BigDecimal("5.00");
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidTokenQuantityException.class,
                 () -> position.registerPurchase(-1, price));
     }
 
     @Test
     void registerPurchase_nullPrice_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidPurchasePriceException.class,
                 () -> position.registerPurchase(10, null));
     }
 
     @Test
     void registerPurchase_zeroPricePerToken_throws() {
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidPurchasePriceException.class,
                 () -> position.registerPurchase(10, BigDecimal.ZERO));
     }
 
     @Test
     void registerPurchase_negativePricePerToken_throws() {
         BigDecimal negativePrice = new BigDecimal("-1.00");
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InvalidPurchasePriceException.class,
                 () -> position.registerPurchase(10, negativePrice));
     }
 
@@ -90,7 +91,7 @@ class PositionTest {
     void registerPurchase_nullPlayer_throws() {
         position.setPlayer(null);
         BigDecimal price = new BigDecimal("5.00");
-        assertThrows(IllegalStateException.class,
+        assertThrows(UserNotFoundException.class,
                 () -> position.registerPurchase(10, price));
     }
 
@@ -113,26 +114,26 @@ class PositionTest {
     @Test
     void registerSell_zeroQuantity_throws() {
         position.registerPurchase(10, new BigDecimal("5.00"));
-        assertThrows(IllegalArgumentException.class, () -> position.registerSell(0));
+        assertThrows(InvalidTokenQuantityException.class, () -> position.registerSell(0));
     }
 
     @Test
     void registerSell_negativeQuantity_throws() {
         position.registerPurchase(10, new BigDecimal("5.00"));
-        assertThrows(IllegalArgumentException.class, () -> position.registerSell(-3));
+        assertThrows(InvalidTokenQuantityException.class, () -> position.registerSell(-3));
     }
 
     @Test
     void registerSell_moreThanHeld_throws() {
         position.registerPurchase(10, new BigDecimal("5.00"));
-        assertThrows(IllegalArgumentException.class, () -> position.registerSell(11));
+        assertThrows(InsufficientTokensException.class, () -> position.registerSell(11));
     }
 
     @Test
     void registerSell_nullPlayer_throws() {
         position.setTokensAcquired(5);
         position.setPlayer(null);
-        assertThrows(IllegalStateException.class, () -> position.registerSell(3));
+        assertThrows(PlayerNotFoundException.class, () -> position.registerSell(3));
     }
 
     @Test

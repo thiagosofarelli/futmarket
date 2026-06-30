@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -29,6 +31,9 @@ class PlayerServiceImplTest {
 
     @Autowired
     private PlayerRepository playerRepository;
+
+    @Autowired
+    private QuoteService quoteService;
 
     private Player haaland;
     private Player lautaro;
@@ -138,8 +143,8 @@ class PlayerServiceImplTest {
 
     @Test
     void getRanking_returnsSortedByCurrentTokenPriceDesc() {
-        List<Player> ranking = playerService.getRanking();
-        assertThat(ranking).extracting(Player::getName)
+        Page<Player> ranking = playerService.getRanking(ALL);
+        assertThat(ranking.getContent()).extracting(Player::getName)
                 .containsExactly("Haaland", "Lautaro", "Saliba", "Courtois");
     }
 
@@ -148,8 +153,43 @@ class PlayerServiceImplTest {
         courtois.setCurrentTokenPrice(new BigDecimal("999.00"));
         playerRepository.save(courtois);
 
-        List<Player> ranking = playerService.getRanking();
-        assertThat(ranking.get(0).getName()).isEqualTo("Courtois");
+        Page<Player> ranking = playerService.getRanking(ALL);
+        assertThat(ranking.getContent().get(0).getName()).isEqualTo("Courtois");
+    }
+
+
+    @Test
+    void getRanking_pagination_returnsCorrectPage() {
+        Page<Player> firstPage = playerService.getRanking(PageRequest.of(0, 2));
+        assertThat(firstPage.getContent()).hasSize(2);
+        assertThat(firstPage.getTotalElements()).isEqualTo(4);
+        assertThat(firstPage.getTotalPages()).isEqualTo(2);
+        assertThat(firstPage.getContent()).extracting(Player::getName)
+                .containsExactly("Haaland", "Lautaro");
+    }
+
+    @Test
+    void findByFilters_byTeamAndPosition_returnsMatchingPlayers() {
+        List<Player> result = playerService.findByFilters(null, "Arsenal FC", PlayerPosition.DEFENDER, ALL).getContent();
+        assertThat(result).hasSize(1)
+                .extracting(Player::getName)
+                .containsExactly("Saliba");
+    }
+
+    @Test
+    void findByFilters_byLeagueAndTeamAndPosition_narrowsToSingle() {
+        List<Player> result = playerService.findByFilters(League.PL, "Arsenal FC", PlayerPosition.DEFENDER, ALL).getContent();
+        assertThat(result).hasSize(1)
+                .extracting(Player::getName)
+                .containsExactly("Saliba");
+    }
+
+    @Test
+    void findByFilters_blankTeam_treatedAsNoTeamFilter() {
+        List<Player> result = playerService.findByFilters(League.PL, "  ", null, ALL).getContent();
+        assertThat(result).hasSize(2)
+                .extracting(Player::getName)
+                .containsExactlyInAnyOrder("Haaland", "Saliba");
     }
 
     private Player save(Player p) {

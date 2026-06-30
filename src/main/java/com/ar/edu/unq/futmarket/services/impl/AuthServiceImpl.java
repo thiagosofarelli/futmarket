@@ -1,8 +1,5 @@
 package com.ar.edu.unq.futmarket.services.impl;
 
-import com.ar.edu.unq.futmarket.controllers.request.LoginRequest;
-import com.ar.edu.unq.futmarket.controllers.request.RegisterRequest;
-import com.ar.edu.unq.futmarket.controllers.response.AuthResponse;
 import com.ar.edu.unq.futmarket.exception.InvalidCredentialsException;
 import com.ar.edu.unq.futmarket.exception.UsernameAlreadyExistsException;
 import com.ar.edu.unq.futmarket.model.User;
@@ -38,21 +35,21 @@ public class AuthServiceImpl implements UserDetailsService, AuthService {
     }
 
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+    public String register(String username, String password) {
+        if (userRepository.findByUsername(username).isPresent()) {
             throw new UsernameAlreadyExistsException();
         }
-        User user = new User(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        User user = new User(username);
+        user.setPassword(passwordEncoder.encode(password));
         userRepository.saveAndFlush(user);
-        return new AuthResponse(jwtService.generateToken(request.getUsername()));
+        return jwtService.generateToken(username);
     }
 
-    public AuthResponse login(LoginRequest request) {
-        UserDetails userDetails = loadUserByUsername(request.getUsername());
-        if (!passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
+    public String login(String username, String password) {
+        UserDetails userDetails = loadUserByUsername(username);
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             throw new InvalidCredentialsException();
         }
-        return new AuthResponse(jwtService.generateToken(request.getUsername()));
+        return jwtService.generateToken(username);
     }
 }

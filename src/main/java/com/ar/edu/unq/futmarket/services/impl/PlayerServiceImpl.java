@@ -17,9 +17,12 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.Cacheable;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -59,10 +62,13 @@ public class PlayerServiceImpl implements PlayerService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
-    public List<Player> getRanking() {
-        return playerRepository.findAll().stream()
-                .sorted(Comparator.comparing(Player::getCurrentTokenPrice).reversed())
-                .toList();
+    @Cacheable(value = "rankings", key = "{#pageable.pageNumber, #pageable.pageSize}")
+    public Page<Player> getRanking(Pageable pageable) {
+        Pageable ranked = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "currentTokenPrice"));
+        return playerRepository.findAll(ranked);
     }
 
     public void syncPlayersStatsByLeague(League league) {

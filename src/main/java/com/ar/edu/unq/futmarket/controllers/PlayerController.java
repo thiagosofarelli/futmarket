@@ -1,5 +1,7 @@
 package com.ar.edu.unq.futmarket.controllers;
 
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 import com.ar.edu.unq.futmarket.model.enums.League;
@@ -18,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ar.edu.unq.futmarket.controllers.dto.PlayerDTO;
+import com.ar.edu.unq.futmarket.controllers.dto.QuoteDTO;
 import com.ar.edu.unq.futmarket.model.Player;
-import com.ar.edu.unq.futmarket.model.Quote;
 import com.ar.edu.unq.futmarket.model.enums.PlayerPosition;
 
 import lombok.RequiredArgsConstructor;
@@ -45,10 +47,10 @@ public class PlayerController {
     }
 
     @GetMapping("/ranking")
-    public ResponseEntity<List<PlayerDTO>> getRanking() {
-        List<PlayerDTO> dtos = playerService.getRanking().stream()
-                .map(player -> modelMapper.map(player, PlayerDTO.class))
-                .toList();
+    public ResponseEntity<Page<PlayerDTO>> getRanking(
+            @PageableDefault(size = 20) Pageable pageable) {
+        Page<PlayerDTO> dtos = playerService.getRanking(pageable)
+                .map(player -> modelMapper.map(player, PlayerDTO.class));
         return ResponseEntity.ok(dtos);
     }
 
@@ -60,9 +62,11 @@ public class PlayerController {
     }
 
     @GetMapping("/{id}/quotes")
-    public ResponseEntity<List<Quote>> getPlayerQuotes(@PathVariable Long id) {
+    public ResponseEntity<List<QuoteDTO>> getPlayerQuotes(@PathVariable Long id) {
         playerService.findById(id);
-        return ResponseEntity.ok(quoteService.findByPlayerId(id));
+        return ResponseEntity.ok(quoteService.findByPlayerId(id).stream()
+                .map(q -> modelMapper.map(q, QuoteDTO.class))
+                .toList());
     }
 
     @PostMapping("/sync")

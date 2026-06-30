@@ -16,7 +16,7 @@ public interface PlayerService {
 
     Page<Player> findByFilters(League league, String team, PlayerPosition position, Pageable pageable);
 
-    List<Player> getRanking();
+    Page<Player> getRanking(Pageable pageable);
 
     void syncPlayersStatsByLeague(League league);
 
