@@ -2,10 +2,6 @@
 
 A REST API that simulates a football player token market. Users can buy and sell player tokens whose value changes over time based on configurable valuation strategies.
 
-[![Java CI with Maven](https://github.com/thiagosofarelli/futmarket/actions/workflows/ci.yml/badge.svg)](https://github.com/thiagosofarelli/futmarket/actions/workflows/ci.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thiagosofarelli_futmarket&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=thiagosofarelli_futmarket)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=thiagosofarelli_futmarket&metric=coverage)](https://sonarcloud.io/summary/new_code?id=thiagosofarelli_futmarket)
-
 ## Tech Stack
 
 - **Java 17**
