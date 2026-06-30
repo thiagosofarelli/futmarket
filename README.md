@@ -200,7 +200,7 @@ Authorization: Bearer <jwt>
 ### Unit tests only
 
 ```bash
-mvn test
+./mvnw test
 ```
 
 Runs all tests except E2E, including architecture tests (ArchUnit). Uses an in-memory H2 database — no Docker required.
@@ -208,7 +208,7 @@ Runs all tests except E2E, including architecture tests (ArchUnit). Uses an in-m
 ### Unit tests + E2E tests
 
 ```bash
-mvn verify
+./mvnw verify
 ```
 
 E2E tests spin up the full Spring Boot application against H2 in-memory with the `e2e` profile. No external services needed.
