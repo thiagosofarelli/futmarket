@@ -1,6 +1,6 @@
 # FutMarket — Football Player Token Market
 
-A REST API that simulates a football player token market. Users can buy and sell player tokens whose value changes over time based on configurable valuation strategies.
+A REST API that simulates a football player token market.- Users can buy and sell player tokens whose value changes over time based on configurable valuation strategies.
 
 ## Tech Stack
 
